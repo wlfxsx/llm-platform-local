@@ -62,7 +62,7 @@ Then run the desktop application:
 dotnet run --project desktop/LlmPlatform.Desktop/LlmPlatform.Desktop.csproj
 ```
 
-Build outputs are written to `.me/build/`. This directory is local to the development machine and is not committed.
+Build outputs are written to `.me/build/`. This directory is local to the development machine and is not committed. Automated tests are also omitted from the repository by default; they can still be run locally from `platform-server/src/test/`.
 
 ## Model Setup
 

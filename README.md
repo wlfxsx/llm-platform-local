@@ -62,7 +62,7 @@ mvn package
 dotnet run --project desktop/LlmPlatform.Desktop/LlmPlatform.Desktop.csproj
 ```
 
-构建产物写入 `.me/build/`。该目录仅用于开发机，不会提交到仓库。
+构建产物写入 `.me/build/`。该目录仅用于开发机，不会提交到仓库。自动化测试默认也不入库，仍可在本机 `platform-server/src/test/` 运行。
 
 ## 模型使用
 

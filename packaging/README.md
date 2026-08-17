@@ -2,7 +2,7 @@
 
 本目录包含开发阶段的应用组装脚本和 Windows 安装程序定义。当前项目尚未发布稳定版本，这些脚本用于验证可分发目录结构，不代表正式发行流程。
 
-所有构建和组装产物写入 `.me/build/`，不会提交到仓库。
+所有构建和组装产物写入 `.me/build/`（仅开发机，不入库）。
 
 ## 捆绑内容
 
@@ -26,13 +26,15 @@
 
 ```
 llm-platform/
-  LlmPlatform.Desktop
+  desktop/
+    LlmPlatform.Desktop.exe  （或对应平台可执行文件）
   runtime/
-    jre/
+    jre/                     （可选，需 LLM_BUNDLE_JRE=1）
     platform-server.jar
-    llamafile 或 llamafile.exe
+    llamafile 或 llamafile.exe （可选）
   native/
-    vec0.dll / vec0.so / vec0.dylib
+    README.md
+    vec0.dll / vec0.so / vec0.dylib  （可选，需手动放入）
   THIRD-PARTY-NOTICES.md
 ```
 
@@ -43,22 +45,22 @@ llm-platform/
 - Windows：`powershell -ExecutionPolicy Bypass -File packaging/assemble.ps1`
 - macOS / Linux：`sh packaging/assemble.sh`
 
-脚本会：
+单次执行脚本会按顺序完成：
 
-1. 编译后端 jar 到 `.me/build/platform-server`
-2. 发布桌面应用到 `.me/build/desktop`
-3. 组装 `.me/build/dist/llm-platform`
+1. 编译后端 JAR 到 `.me/build/platform-server`（仅开发机）
+2. 把桌面应用发布到 `.me/build/dist/llm-platform/desktop`
+3. 把 JAR、许可证和可选运行时复制进同一组装目录 `.me/build/dist/llm-platform`
 
 可选环境变量：
 
 - `LLM_BUNDLE_JRE=1`：把 `JAVA_HOME` 指向的运行时复制到组装目录
-- `LLM_LLAMAFILE`：指定 llamafile 二进制；未指定时脚本尝试使用 `.me/files/` 中的本机文件
+- `LLM_LLAMAFILE`：指定 llamafile 二进制；未指定时脚本尝试使用 `.me/files/`（仅开发机）中的本机文件
 
-SQLite 向量扩展目前不由脚本自动下载。需要时将对应平台的动态库复制到 `.me/build/dist/llm-platform/native/`。
+脚本不会自动下载 SQLite 向量扩展，只会把 `packaging/native/README.md` 复制到组装目录的 `native/`。需要时将对应平台的动态库放入 `.me/build/dist/llm-platform/native/`。
 
 ## Windows 安装程序
 
-安装 Inno Setup 后，可使用 `packaging/windows/llm-platform.iss` 把组装目录生成安装程序。安装程序输出位于 `.me/build/dist/installer/`。
+安装 Inno Setup 后，可使用 `packaging/windows/llm-platform.iss` 把组装目录生成安装程序。安装程序输出位于 `.me/build/dist/installer/`（仅开发机）。
 
 ## 发布边界
 
