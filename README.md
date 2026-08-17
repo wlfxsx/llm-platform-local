@@ -45,7 +45,17 @@ Avalonia 桌面应用
 - JDK 21
 - Maven 3.9+
 - .NET 10 SDK
-- 本地推理需要与操作系统和架构匹配的 llamafile
+- 本地推理需要与操作系统和架构匹配的 llamafile（远程模式可省略）
+
+### llamafile 放置位置
+
+仓库不包含 llamafile 二进制。请从 [Mozilla llamafile Releases](https://github.com/Mozilla-Ocho/llamafile/releases) 下载后，按下列之一放置（Windows 使用 `llamafile.exe`，其它系统使用 `llamafile`）：
+
+1. **开发机推荐（不入库）**：放到仓库根目录 `.me/files/llamafile.exe` 或 `.me/files/llamafile`
+2. **组装/安装目录**：放到 `runtime/llamafile.exe` 或 `runtime/llamafile`（与 `platform-server.jar` 同级）
+3. **显式路径**：在 `platform-server/src/main/resources/application.yml` 设置 `llm.llamafile.binary-path` 为绝对路径
+
+控制面按设置项、配置项、当前工作目录、`runtime/`、JAR 旁路径，以及向上查找的 `.me/files/`（仅开发机）依次解析。
 
 先构建 Java 控制面：
 
@@ -64,7 +74,7 @@ dotnet run --project desktop/LlmPlatform.Desktop/LlmPlatform.Desktop.csproj
 
 ## 模型使用
 
-- 本地模式：在设置中导入 GGUF 文件、选择运行硬件和参数预设，然后显式启动模型。
+- 本地模式：确认 llamafile 已按上文放置，在设置中导入 GGUF 文件、选择运行硬件和参数预设，然后显式启动模型。
 - 远程模式：添加 OpenAI 兼容 API 地址、模型名和 API Key，并开启联网总开关。
 - 应用启动不会自动加载本地模型。
 

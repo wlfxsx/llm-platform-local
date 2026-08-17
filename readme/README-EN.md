@@ -45,7 +45,17 @@ Requirements:
 - JDK 21
 - Maven 3.9+
 - .NET 10 SDK
-- A llamafile binary matching the operating system and architecture for local inference
+- A llamafile binary matching the operating system and architecture for local inference (optional for remote-only use)
+
+### Where to put llamafile
+
+The repository does not ship the llamafile binary. Download it from [Mozilla llamafile Releases](https://github.com/Mozilla-Ocho/llamafile/releases), then place it using one of these options (`llamafile.exe` on Windows, `llamafile` elsewhere):
+
+1. **Local development (not committed):** put it at `.me/files/llamafile.exe` or `.me/files/llamafile` under the repository root
+2. **Assembled / installed layout:** put it at `runtime/llamafile.exe` or `runtime/llamafile` next to `platform-server.jar`
+3. **Explicit path:** set `llm.llamafile.binary-path` in `platform-server/src/main/resources/application.yml` to an absolute path
+
+The control plane resolves the binary from settings, config, the working directory, `runtime/`, paths next to the JAR, and `.me/files/` when walking up from the working directory (development machines only).
 
 Build the Java control plane:
 
@@ -64,7 +74,7 @@ Build outputs are written to `.me/build/` (development machine only; not committ
 
 ## Model Setup
 
-- Local mode: import a GGUF file, select the execution device and a parameter profile, then explicitly start the model.
+- Local mode: make sure llamafile is placed as above, import a GGUF file, select the execution device and a parameter profile, then explicitly start the model.
 - Remote mode: add an OpenAI-compatible API URL, model name, and API key, then enable the global network switch.
 - The application does not load a local model automatically at startup.
 

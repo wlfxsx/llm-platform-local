@@ -18,16 +18,21 @@ import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.CodeSource;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -303,25 +308,65 @@ public class LlamafileManager {
     }
 
     private Path resolveBinary(AppSettings settings) {
-        List<String> candidates = new ArrayList<>();
+        String fileName =
+                System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("win")
+                        ? "llamafile.exe"
+                        : "llamafile";
+        Set<Path> candidates = new LinkedHashSet<>();
         if (settings.llamafileBinary() != null && !settings.llamafileBinary().isBlank()) {
-            candidates.add(settings.llamafileBinary());
+            candidates.add(Path.of(settings.llamafileBinary()));
         }
         if (!properties.getLlamafile().getBinaryPath().isBlank()) {
-            candidates.add(properties.getLlamafile().getBinaryPath());
+            candidates.add(Path.of(properties.getLlamafile().getBinaryPath()));
         }
-        if (System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("win")) {
-            candidates.add("llamafile.exe");
-        } else {
-            candidates.add("llamafile");
+        Path cwd = Path.of("").toAbsolutePath().normalize();
+        candidates.add(cwd.resolve(fileName));
+        candidates.add(cwd.resolve("runtime").resolve(fileName));
+        Path jarDir = locateJarDirectory();
+        if (jarDir != null) {
+            candidates.add(jarDir.resolve(fileName));
+            candidates.add(jarDir.resolve("runtime").resolve(fileName));
+            Path parent = jarDir.getParent();
+            if (parent != null) {
+                candidates.add(parent.resolve("runtime").resolve(fileName));
+            }
         }
-        for (String candidate : candidates) {
-            Path path = Path.of(candidate);
+        // 仅开发机：仓库 .me/files 下的本机二进制，不入库。
+        Path walk = cwd;
+        for (int i = 0; i < 8 && walk != null; i++) {
+            candidates.add(walk.resolve(".me").resolve("files").resolve(fileName));
+            walk = walk.getParent();
+        }
+        for (Path path : candidates) {
             if (Files.isRegularFile(path)) {
-                return path.toAbsolutePath();
+                return path.toAbsolutePath().normalize();
             }
         }
         throw new PlatformException("LLAMAFILE_FAILED", "error.llamafileFailed");
+    }
+
+    /** 定位可执行 JAR 所在目录，便于找到同目录或同级 runtime 下的 llamafile。 */
+    private Path locateJarDirectory() {
+        try {
+            CodeSource source = LlamafileManager.class.getProtectionDomain().getCodeSource();
+            if (source == null) {
+                return null;
+            }
+            URL location = source.getLocation();
+            if (location == null) {
+                return null;
+            }
+            Path path = Path.of(location.toURI());
+            if (Files.isRegularFile(path)) {
+                return path.getParent();
+            }
+            if (Files.isDirectory(path)) {
+                return path;
+            }
+        } catch (URISyntaxException ignored) {
+            // 类路径异常时回退到其它候选路径。
+        }
+        return null;
     }
 
     private void drainOutput(Process started) {

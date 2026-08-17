@@ -56,6 +56,8 @@ llm-platform/
 - `LLM_BUNDLE_JRE=1`：把 `JAVA_HOME` 指向的运行时复制到组装目录
 - `LLM_LLAMAFILE`：指定 llamafile 二进制；未指定时脚本尝试使用 `.me/files/`（仅开发机）中的本机文件
 
+运行时查找顺序与根目录 README 一致：组装后二进制应位于 `runtime/llamafile`（Windows 为 `llamafile.exe`），与 `platform-server.jar` 同级。开发机也可把下载的二进制先放到 `.me/files/`，由脚本在组装时复制进去。
+
 脚本不会自动下载 SQLite 向量扩展，只会把 `packaging/native/README.md` 复制到组装目录的 `native/`。需要时将对应平台的动态库放入 `.me/build/dist/llm-platform/native/`。
 
 ## Windows 安装程序
