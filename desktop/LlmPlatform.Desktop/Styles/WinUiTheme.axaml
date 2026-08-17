@@ -1,0 +1,815 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ctrl="using:LlmPlatform.Desktop.Controls">
+  <Styles.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.ThemeDictionaries>
+        <!-- WinUI 3 浅色：页面 #F3F3F3，卡片近白，控件浅填充 -->
+        <ResourceDictionary x:Key="Light">
+          <Color x:Key="SolidBackgroundFillColorBase">#F3F3F3</Color>
+          <Color x:Key="CardFillColor">#FFFFFF</Color>
+          <Color x:Key="ControlFillColor">#B3FFFFFF</Color>
+          <Color x:Key="ControlFillColorSecondary">#80F9F9F9</Color>
+          <Color x:Key="SubtleFillColorSecondary">#0A000000</Color>
+          <Color x:Key="SubtleFillColorTertiary">#0F000000</Color>
+          <Color x:Key="DividerStrokeColor">#0F000000</Color>
+          <Color x:Key="CardStrokeColor">#0F000000</Color>
+          <Color x:Key="TextFillColorPrimary">#E4000000</Color>
+          <Color x:Key="TextFillColorSecondary">#9E000000</Color>
+          <Color x:Key="AccentFillColor">#005FB8</Color>
+          <Color x:Key="OnAccentFillColor">#FFFFFF</Color>
+          <Color x:Key="NavigationPaneColor">#F3F3F3</Color>
+
+          <SolidColorBrush x:Key="WindowBackgroundBrush" Color="{StaticResource SolidBackgroundFillColorBase}" />
+          <SolidColorBrush x:Key="CardBrush" Color="{StaticResource CardFillColor}" />
+          <SolidColorBrush x:Key="ControlFillBrush" Color="{StaticResource ControlFillColor}" />
+          <SolidColorBrush x:Key="ControlFillSecondaryBrush" Color="{StaticResource ControlFillColorSecondary}" />
+          <SolidColorBrush x:Key="SubtleHoverBrush" Color="{StaticResource SubtleFillColorSecondary}" />
+          <SolidColorBrush x:Key="SubtleSelectedBrush" Color="{StaticResource SubtleFillColorTertiary}" />
+          <SolidColorBrush x:Key="DividerBrush" Color="{StaticResource DividerStrokeColor}" />
+          <SolidColorBrush x:Key="CardStrokeBrush" Color="{StaticResource CardStrokeColor}" />
+          <SolidColorBrush x:Key="TextFillBrush" Color="{StaticResource TextFillColorPrimary}" />
+          <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextFillColorSecondary}" />
+          <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentFillColor}" />
+          <SolidColorBrush x:Key="AccentTextBrush" Color="{StaticResource OnAccentFillColor}" />
+          <SolidColorBrush x:Key="CautionBrush" Color="#9D5D00" />
+          <SolidColorBrush x:Key="NavigationPaneBrush" Color="{StaticResource NavigationPaneColor}" />
+
+          <SolidColorBrush x:Key="ComboBoxBackground" Color="{StaticResource ControlFillColor}" />
+          <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="{StaticResource ControlFillColorSecondary}" />
+          <SolidColorBrush x:Key="ComboBoxBackgroundPressed" Color="#4DF9F9F9" />
+          <SolidColorBrush x:Key="ComboBoxBackgroundDisabled" Color="#4DF9F9F9" />
+          <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="{StaticResource CardStrokeColor}" />
+          <SolidColorBrush x:Key="ComboBoxBorderBrushPointerOver" Color="#29000000" />
+          <SolidColorBrush x:Key="ComboBoxBorderBrushPressed" Color="#29000000" />
+          <SolidColorBrush x:Key="ComboBoxBorderBrushDisabled" Color="#0F000000" />
+          <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#F9F9F9" />
+          <SolidColorBrush x:Key="ComboBoxDropDownBorderBrush" Color="#1A000000" />
+          <SolidColorBrush x:Key="ComboBoxForeground" Color="{StaticResource TextFillColorPrimary}" />
+          <SolidColorBrush x:Key="ComboBoxPlaceHolderForeground" Color="{StaticResource TextFillColorSecondary}" />
+          <BoxShadows x:Key="FlyoutShadow">0 8 16 0 #24000000</BoxShadows>
+          <SolidColorBrush x:Key="TextControlBackground" Color="{StaticResource ControlFillColor}" />
+          <SolidColorBrush x:Key="TextControlBorderBrush" Color="{StaticResource CardStrokeColor}" />
+
+          <!-- 标准按钮：浅填充 + 底边略深的立体描边，与 WinUI 3 一致 -->
+          <SolidColorBrush x:Key="ButtonBackground" Color="#B3FFFFFF" />
+          <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#80F9F9F9" />
+          <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#4DF9F9F9" />
+          <SolidColorBrush x:Key="ButtonBackgroundDisabled" Color="#4DF9F9F9" />
+          <SolidColorBrush x:Key="ButtonForeground" Color="#E4000000" />
+          <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="#E4000000" />
+          <SolidColorBrush x:Key="ButtonForegroundPressed" Color="#9E000000" />
+          <SolidColorBrush x:Key="ButtonForegroundDisabled" Color="#5C000000" />
+          <LinearGradientBrush x:Key="ButtonBorderBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Offset="0" Color="#0F000000" />
+            <GradientStop Offset="0.9" Color="#0F000000" />
+            <GradientStop Offset="1" Color="#29000000" />
+          </LinearGradientBrush>
+          <LinearGradientBrush x:Key="ButtonBorderBrushPointerOver" StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Offset="0" Color="#0F000000" />
+            <GradientStop Offset="0.9" Color="#0F000000" />
+            <GradientStop Offset="1" Color="#29000000" />
+          </LinearGradientBrush>
+          <SolidColorBrush x:Key="ButtonBorderBrushPressed" Color="#0F000000" />
+          <SolidColorBrush x:Key="ButtonBorderBrushDisabled" Color="#0F000000" />
+
+          <SolidColorBrush x:Key="AccentButtonBackground" Color="#005FB8" />
+          <SolidColorBrush x:Key="AccentButtonBackgroundPointerOver" Color="#E6005FB8" />
+          <SolidColorBrush x:Key="AccentButtonBackgroundPressed" Color="#CC005FB8" />
+          <SolidColorBrush x:Key="AccentButtonBackgroundDisabled" Color="#21000000" />
+          <SolidColorBrush x:Key="AccentButtonForeground" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="AccentButtonForegroundPressed" Color="#B3FFFFFF" />
+          <SolidColorBrush x:Key="AccentButtonForegroundDisabled" Color="#5C000000" />
+          <SolidColorBrush x:Key="AccentButtonBorderBrush" Color="#14000000" />
+        </ResourceDictionary>
+
+        <!-- WinUI 3 深色：页面 #202020，卡片 #2C2C2C，强调色只用于指示条和主按钮 -->
+        <ResourceDictionary x:Key="Dark">
+          <Color x:Key="SolidBackgroundFillColorBase">#202020</Color>
+          <Color x:Key="CardFillColor">#2C2C2C</Color>
+          <Color x:Key="ControlFillColor">#0FFFFFFF</Color>
+          <Color x:Key="ControlFillColorSecondary">#15FFFFFF</Color>
+          <Color x:Key="SubtleFillColorSecondary">#0FFFFFFF</Color>
+          <Color x:Key="SubtleFillColorTertiary">#15FFFFFF</Color>
+          <Color x:Key="DividerStrokeColor">#15FFFFFF</Color>
+          <Color x:Key="CardStrokeColor">#12FFFFFF</Color>
+          <Color x:Key="TextFillColorPrimary">#FFFFFF</Color>
+          <Color x:Key="TextFillColorSecondary">#C5FFFFFF</Color>
+          <Color x:Key="AccentFillColor">#60CDFF</Color>
+          <Color x:Key="OnAccentFillColor">#000000</Color>
+          <Color x:Key="NavigationPaneColor">#202020</Color>
+
+          <SolidColorBrush x:Key="WindowBackgroundBrush" Color="{StaticResource SolidBackgroundFillColorBase}" />
+          <SolidColorBrush x:Key="CardBrush" Color="{StaticResource CardFillColor}" />
+          <SolidColorBrush x:Key="ControlFillBrush" Color="{StaticResource ControlFillColor}" />
+          <SolidColorBrush x:Key="ControlFillSecondaryBrush" Color="{StaticResource ControlFillColorSecondary}" />
+          <SolidColorBrush x:Key="SubtleHoverBrush" Color="{StaticResource SubtleFillColorSecondary}" />
+          <SolidColorBrush x:Key="SubtleSelectedBrush" Color="{StaticResource SubtleFillColorTertiary}" />
+          <SolidColorBrush x:Key="DividerBrush" Color="{StaticResource DividerStrokeColor}" />
+          <SolidColorBrush x:Key="CardStrokeBrush" Color="{StaticResource CardStrokeColor}" />
+          <SolidColorBrush x:Key="TextFillBrush" Color="{StaticResource TextFillColorPrimary}" />
+          <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextFillColorSecondary}" />
+          <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentFillColor}" />
+          <SolidColorBrush x:Key="AccentTextBrush" Color="{StaticResource OnAccentFillColor}" />
+          <SolidColorBrush x:Key="CautionBrush" Color="#FCE100" />
+          <SolidColorBrush x:Key="NavigationPaneBrush" Color="{StaticResource NavigationPaneColor}" />
+
+          <SolidColorBrush x:Key="ComboBoxBackground" Color="{StaticResource ControlFillColor}" />
+          <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="{StaticResource ControlFillColorSecondary}" />
+          <SolidColorBrush x:Key="ComboBoxBackgroundPressed" Color="#08FFFFFF" />
+          <SolidColorBrush x:Key="ComboBoxBackgroundDisabled" Color="#05FFFFFF" />
+          <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="{StaticResource CardStrokeColor}" />
+          <SolidColorBrush x:Key="ComboBoxBorderBrushPointerOver" Color="#18FFFFFF" />
+          <SolidColorBrush x:Key="ComboBoxBorderBrushPressed" Color="#12FFFFFF" />
+          <SolidColorBrush x:Key="ComboBoxBorderBrushDisabled" Color="#12FFFFFF" />
+          <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#2C2C2C" />
+          <SolidColorBrush x:Key="ComboBoxDropDownBorderBrush" Color="#1FFFFFFF" />
+          <SolidColorBrush x:Key="ComboBoxForeground" Color="{StaticResource TextFillColorPrimary}" />
+          <SolidColorBrush x:Key="ComboBoxPlaceHolderForeground" Color="{StaticResource TextFillColorSecondary}" />
+          <BoxShadows x:Key="FlyoutShadow">0 8 16 0 #5C000000</BoxShadows>
+          <SolidColorBrush x:Key="TextControlBackground" Color="{StaticResource ControlFillColor}" />
+          <SolidColorBrush x:Key="TextControlBorderBrush" Color="{StaticResource CardStrokeColor}" />
+
+          <!-- 深色下按下反而更暗、文字转次要色，保持 WinUI 的按压反馈方向 -->
+          <SolidColorBrush x:Key="ButtonBackground" Color="#0FFFFFFF" />
+          <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#15FFFFFF" />
+          <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#08FFFFFF" />
+          <SolidColorBrush x:Key="ButtonBackgroundDisabled" Color="#0BFFFFFF" />
+          <SolidColorBrush x:Key="ButtonForeground" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="ButtonForegroundPressed" Color="#C5FFFFFF" />
+          <SolidColorBrush x:Key="ButtonForegroundDisabled" Color="#5DFFFFFF" />
+          <LinearGradientBrush x:Key="ButtonBorderBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Offset="0" Color="#12FFFFFF" />
+            <GradientStop Offset="0.9" Color="#12FFFFFF" />
+            <GradientStop Offset="1" Color="#18FFFFFF" />
+          </LinearGradientBrush>
+          <LinearGradientBrush x:Key="ButtonBorderBrushPointerOver" StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Offset="0" Color="#12FFFFFF" />
+            <GradientStop Offset="0.9" Color="#12FFFFFF" />
+            <GradientStop Offset="1" Color="#18FFFFFF" />
+          </LinearGradientBrush>
+          <SolidColorBrush x:Key="ButtonBorderBrushPressed" Color="#12FFFFFF" />
+          <SolidColorBrush x:Key="ButtonBorderBrushDisabled" Color="#12FFFFFF" />
+
+          <SolidColorBrush x:Key="AccentButtonBackground" Color="#60CDFF" />
+          <SolidColorBrush x:Key="AccentButtonBackgroundPointerOver" Color="#E660CDFF" />
+          <SolidColorBrush x:Key="AccentButtonBackgroundPressed" Color="#CC60CDFF" />
+          <SolidColorBrush x:Key="AccentButtonBackgroundDisabled" Color="#29FFFFFF" />
+          <SolidColorBrush x:Key="AccentButtonForeground" Color="#000000" />
+          <SolidColorBrush x:Key="AccentButtonForegroundPressed" Color="#80000000" />
+          <SolidColorBrush x:Key="AccentButtonForegroundDisabled" Color="#87FFFFFF" />
+          <SolidColorBrush x:Key="AccentButtonBorderBrush" Color="#14000000" />
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+
+      <FontFamily x:Key="AppFontFamily">Segoe UI Variable Text, Segoe UI, Microsoft YaHei UI</FontFamily>
+    </ResourceDictionary>
+  </Styles.Resources>
+
+  <Style Selector="Window">
+    <Setter Property="FontFamily" Value="{DynamicResource AppFontFamily}" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillBrush}" />
+    <Setter Property="Background" Value="{DynamicResource WindowBackgroundBrush}" />
+  </Style>
+
+  <Style Selector="ctrl|FluentIcon">
+    <Setter Property="Width" Value="16" />
+    <Setter Property="Height" Value="16" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillBrush}" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="Transparent" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" />
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="TextBlock.title">
+    <Setter Property="FontSize" Value="28" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillBrush}" />
+  </Style>
+
+  <Style Selector="TextBlock.subtitle">
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillBrush}" />
+  </Style>
+
+  <Style Selector="TextBlock.caption">
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+    <Setter Property="TextWrapping" Value="Wrap" />
+  </Style>
+
+  <!-- 前置条件提示用警示色，和普通说明文字区分开 -->
+  <!-- 提示句子通常比控件列宽，必须换行，否则会被右侧控件裁掉 -->
+  <Style Selector="TextBlock.hint">
+    <Setter Property="Foreground" Value="{DynamicResource CautionBrush}" />
+    <Setter Property="TextWrapping" Value="Wrap" />
+  </Style>
+
+  <Style Selector="ctrl|FluentIcon.hint">
+    <Setter Property="Foreground" Value="{DynamicResource CautionBrush}" />
+  </Style>
+
+  <!-- 设置组：同一分组共用圆角，行与行之间只有 1px 分隔，避免卡片散落 -->
+  <Style Selector="Border.settings-group">
+    <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="ClipToBounds" Value="True" />
+    <Setter Property="Margin" Value="0,0,0,4" />
+  </Style>
+
+  <Style Selector="Border.settings-row">
+    <Setter Property="Padding" Value="16,10" />
+    <Setter Property="MinHeight" Value="56" />
+    <Setter Property="Background" Value="Transparent" />
+  </Style>
+
+  <Style Selector="Border.divider">
+    <Setter Property="Background" Value="{DynamicResource DividerBrush}" />
+    <Setter Property="Height" Value="1" />
+    <Setter Property="Margin" Value="16,0" />
+  </Style>
+
+  <Style Selector="Border.badge">
+    <Setter Property="Background" Value="{DynamicResource SubtleSelectedBrush}" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="Padding" Value="6,1" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+
+  <Style Selector="Border.badge > TextBlock">
+    <Setter Property="FontSize" Value="11" />
+    <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+  </Style>
+
+  <Style Selector="Border.badge.accent">
+    <Setter Property="Background" Value="{DynamicResource SubtleSelectedBrush}" />
+  </Style>
+
+  <Style Selector="Border.badge.accent > TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource TextFillBrush}" />
+  </Style>
+
+  <!-- NavigationView 式左侧导航：同一底色，中间一条分隔线，不再套默认 Tab 框 -->
+  <Style Selector="TabControl.nav">
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="ItemsPanel">
+      <ItemsPanelTemplate>
+        <StackPanel Margin="4,8,4,16" Spacing="2" />
+      </ItemsPanelTemplate>
+    </Setter>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid ColumnDefinitions="Auto,*">
+          <Border Name="NavPane"
+                  Width="228"
+                  Background="{DynamicResource NavigationPaneBrush}"
+                  BorderBrush="{DynamicResource DividerBrush}"
+                  BorderThickness="0,0,1,0">
+            <Border.Transitions>
+              <Transitions>
+                <DoubleTransition Property="Width" Duration="0:0:0.14" />
+              </Transitions>
+            </Border.Transitions>
+            <DockPanel>
+              <!-- 折叠按钮固定在窗格顶部，收起后只保留图标列 -->
+              <Grid Name="NavHeader"
+                    DockPanel.Dock="Top"
+                    ColumnDefinitions="Auto,*"
+                    Margin="8,12,8,8">
+                <Button Classes="icon"
+                        ToolTip.Tip="{DynamicResource ToggleNav}"
+                        Command="{ReflectionBinding ToggleNavCommand}">
+                  <ctrl:FluentIcon Kind="Menu" />
+                </Button>
+                <TextBlock Name="NavTitle"
+                           Grid.Column="1"
+                           Classes="title"
+                           Margin="8,0,0,0"
+                           FontSize="20"
+                           VerticalAlignment="Center"
+                           Text="{DynamicResource TraySettings}" />
+              </Grid>
+              <ItemsPresenter Name="PART_ItemsPresenter"
+                              ItemsPanel="{TemplateBinding ItemsPanel}" />
+            </DockPanel>
+          </Border>
+          <ContentPresenter Name="PART_SelectedContentHost"
+                            Grid.Column="1"
+                            Margin="0"
+                            Content="{TemplateBinding SelectedContent}"
+                            ContentTemplate="{TemplateBinding SelectedContentTemplate}" />
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="TabControl.nav.collapsed /template/ Border#NavPane">
+    <Setter Property="Width" Value="56" />
+  </Style>
+
+  <Style Selector="TabControl.nav.collapsed /template/ TextBlock#NavTitle">
+    <Setter Property="IsVisible" Value="False" />
+  </Style>
+
+  <Style Selector="TabControl.nav.collapsed /template/ Grid#NavHeader">
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="Margin" Value="0,12,0,8" />
+  </Style>
+
+  <Style Selector="TabControl.nav > TabItem">
+    <Setter Property="Foreground" Value="{DynamicResource TextFillBrush}" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="MinHeight" Value="36" />
+    <Setter Property="Height" Value="36" />
+    <Setter Property="Padding" Value="12,0,12,0" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="NavRoot"
+                Background="{TemplateBinding Background}"
+                CornerRadius="4"
+                Padding="{TemplateBinding Padding}">
+          <!-- 指示条覆盖在左侧不占位，收起后图标才能在窗格里真正居中 -->
+          <Grid>
+            <Border Name="NavIndicator"
+                    Width="3"
+                    Height="16"
+                    CornerRadius="1.5"
+                    Background="Transparent"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center" />
+            <ContentPresenter Name="NavContent"
+                              Margin="13,0,0,0"
+                              Content="{TemplateBinding Header}"
+                              ContentTemplate="{TemplateBinding HeaderTemplate}"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="Center" />
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="TabControl.nav > TabItem:pointerover /template/ Border#NavRoot">
+    <Setter Property="Background" Value="{DynamicResource SubtleHoverBrush}" />
+  </Style>
+
+  <Style Selector="TabControl.nav > TabItem:selected /template/ Border#NavRoot">
+    <Setter Property="Background" Value="{DynamicResource SubtleSelectedBrush}" />
+  </Style>
+
+  <Style Selector="TabControl.nav > TabItem:selected /template/ Border#NavIndicator">
+    <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+  </Style>
+
+  <Style Selector="TabControl.nav > TabItem:selected">
+    <Setter Property="Foreground" Value="{DynamicResource TextFillBrush}" />
+  </Style>
+
+  <!-- 收起态样式必须放在导航项基础样式之后，后定义者才会覆盖展开态的对齐与内边距 -->
+  <Style Selector="TabControl.nav.collapsed > TabItem">
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+  </Style>
+
+  <Style Selector="TabControl.nav.collapsed > TabItem /template/ ContentPresenter#NavContent">
+    <Setter Property="Margin" Value="0,0,0,4" />
+  </Style>
+
+  <!-- 收起后没有文字，指示条改为图标下方的横条，避免竖条把图标挤偏 -->
+  <Style Selector="TabControl.nav.collapsed > TabItem /template/ Border#NavIndicator">
+    <Setter Property="Width" Value="16" />
+    <Setter Property="Height" Value="3" />
+    <Setter Property="Margin" Value="0,0,0,4" />
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="VerticalAlignment" Value="Bottom" />
+  </Style>
+
+  <Style Selector="TabControl.nav.collapsed TextBlock.nav-label">
+    <Setter Property="IsVisible" Value="False" />
+  </Style>
+
+  <!-- WinUI 3 标准按钮：32 高、4 圆角、11/5 内边距，四态由资源统一驱动 -->
+  <Style Selector="Button">
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="MinHeight" Value="32" />
+    <Setter Property="MinWidth" Value="88" />
+    <Setter Property="Padding" Value="12,5,12,6" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+
+  <Style Selector="Button.compact">
+    <Setter Property="MinWidth" Value="0" />
+  </Style>
+
+  <Style Selector="Button.icon">
+    <Setter Property="MinWidth" Value="32" />
+    <Setter Property="Width" Value="32" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+  </Style>
+
+  <Style Selector="Button.accent">
+    <Setter Property="Background" Value="{DynamicResource AccentButtonBackground}" />
+    <Setter Property="Foreground" Value="{DynamicResource AccentButtonForeground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AccentButtonBorderBrush}" />
+  </Style>
+
+  <Style Selector="Button.accent:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AccentButtonBackgroundPointerOver}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AccentButtonBorderBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentButtonForeground}" />
+  </Style>
+
+  <Style Selector="Button.accent:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AccentButtonBackgroundPressed}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AccentButtonBorderBrush}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentButtonForegroundPressed}" />
+  </Style>
+
+  <Style Selector="Button.accent:disabled /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AccentButtonBackgroundDisabled}" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentButtonForegroundDisabled}" />
+  </Style>
+
+  <Style Selector="TextBox">
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="MinHeight" Value="32" />
+    <Setter Property="Background" Value="{DynamicResource ControlFillBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeBrush}" />
+  </Style>
+
+  <Style Selector="ComboBox">
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="MinHeight" Value="32" />
+    <Setter Property="MinWidth" Value="148" />
+    <Setter Property="HorizontalAlignment" Value="Right" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="Background" Value="{DynamicResource ComboBoxBackground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ComboBoxBorderBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource ComboBoxForeground}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Padding" Value="12,5,8,6" />
+  </Style>
+
+  <Style Selector="ComboBox:pointerover /template/ Border#Background">
+    <Setter Property="Background" Value="{DynamicResource ComboBoxBackgroundPointerOver}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ComboBoxBorderBrushPointerOver}" />
+  </Style>
+
+  <Style Selector="ComboBox:pressed /template/ Border#Background">
+    <Setter Property="Background" Value="{DynamicResource ComboBoxBackgroundPressed}" />
+  </Style>
+
+  <!-- 弹出面板留出上下内边距，否则首尾选项的方形高亮会盖掉圆角 -->
+  <Style Selector="ComboBox /template/ Border#PopupBorder">
+    <Setter Property="Background" Value="{DynamicResource ComboBoxDropDownBackground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ComboBoxDropDownBorderBrush}" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Padding" Value="0,4" />
+    <Setter Property="BoxShadow" Value="{DynamicResource FlyoutShadow}" />
+  </Style>
+
+  <!-- 左右外边距把高亮收进面板内；左侧多留空给选中指示条，避免压住文字 -->
+  <Style Selector="ComboBoxItem">
+    <Setter Property="MinHeight" Value="32" />
+    <Setter Property="Padding" Value="16,6,8,6" />
+    <Setter Property="Margin" Value="4,1" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Panel>
+          <ContentPresenter Name="PART_ContentPresenter"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Padding="16,6,8,6"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+          <Border Name="SelectionIndicator"
+                  Width="3"
+                  Height="16"
+                  HorizontalAlignment="Left"
+                  VerticalAlignment="Center"
+                  CornerRadius="1.5"
+                  Background="{DynamicResource AccentBrush}"
+                  IsVisible="False" />
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="ComboBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SubtleHoverBrush}" />
+  </Style>
+
+  <Style Selector="ComboBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SubtleSelectedBrush}" />
+  </Style>
+
+  <Style Selector="ComboBoxItem:selected /template/ Border#SelectionIndicator">
+    <Setter Property="IsVisible" Value="True" />
+  </Style>
+
+  <Style Selector="ToggleSwitch">
+    <Setter Property="OnContent" Value="" />
+    <Setter Property="OffContent" Value="" />
+    <Setter Property="MinWidth" Value="0" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+
+  <Style Selector="NumericUpDown">
+    <Setter Property="MinHeight" Value="32" />
+    <Setter Property="MinWidth" Value="120" />
+    <Setter Property="HorizontalAlignment" Value="Right" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="Background" Value="{DynamicResource ControlFillBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeBrush}" />
+  </Style>
+
+  <!-- 参数分组用标题分隔而不是折叠，避免出现深色标题条并让全部参数一屏可见 -->
+  <Style Selector="TextBlock.group-title">
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillBrush}" />
+    <Setter Property="Margin" Value="2,20,0,8" />
+  </Style>
+
+  <!-- 监控卡片：标题、读数、图表三段固定高度，保证多列卡片始终对齐 -->
+  <Style Selector="Border.metric-card">
+    <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Padding" Value="16" />
+  </Style>
+
+  <Style Selector="Border.metric-card TextBlock.metric-title">
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillBrush}" />
+    <Setter Property="Height" Value="20" />
+    <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+  </Style>
+
+  <Style Selector="Border.metric-card TextBlock.metric-value">
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+    <Setter Property="Height" Value="18" />
+    <Setter Property="Margin" Value="0,2,0,8" />
+    <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+  </Style>
+
+  <Style Selector="Border.chat-sidebar">
+    <Setter Property="Background" Value="{DynamicResource NavigationPaneBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}" />
+    <Setter Property="BorderThickness" Value="0,0,1,0" />
+  </Style>
+
+  <!-- 收起后只剩图标列，顶栏改为居中，避免按钮偏向一侧 -->
+  <Style Selector="Border.chat-sidebar.collapsed Grid#SidebarHeader">
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="Margin" Value="0" />
+  </Style>
+
+  <Style Selector="Button.session-item">
+    <Setter Property="Padding" Value="12,8" />
+    <Setter Property="CornerRadius" Value="6" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
+  </Style>
+
+  <!-- 会话项是列表行而不是按钮，默认按钮底色会让它看起来像输入框。 -->
+  <Style Selector="Button.session-item /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+  </Style>
+
+  <Style Selector="Button.session-item:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SubtleHoverBrush}" />
+  </Style>
+
+  <Style Selector="Button.session-item.selected /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SubtleSelectedBrush}" />
+  </Style>
+
+  <Style Selector="Border.chat-bubble">
+    <Setter Property="Padding" Value="14,10" />
+    <Setter Property="CornerRadius" Value="10" />
+  </Style>
+
+  <Style Selector="Border.chat-bubble.user">
+    <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+  </Style>
+
+  <Style Selector="Border.chat-bubble.user SelectableTextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}" />
+  </Style>
+
+  <Style Selector="Border.chat-bubble.assistant">
+    <Setter Property="Background" Value="{DynamicResource ControlFillBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+
+  <!-- 透明背景让整行都可命中，否则指针从气泡移到下方按钮时会先失去悬停。 -->
+  <Style Selector="Grid.message-row">
+    <Setter Property="Background" Value="Transparent" />
+  </Style>
+
+  <!-- 消息操作默认隐藏，指针进入该条消息才出现。 -->
+  <Style Selector="StackPanel.message-actions">
+    <Setter Property="Opacity" Value="0" />
+    <Setter Property="IsHitTestVisible" Value="False" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+  </Style>
+
+  <Style Selector="Grid.message-row.user StackPanel.message-actions">
+    <Setter Property="HorizontalAlignment" Value="Right" />
+  </Style>
+
+  <Style Selector="Grid.message-row:pointerover StackPanel.message-actions">
+    <Setter Property="Opacity" Value="1" />
+    <Setter Property="IsHitTestVisible" Value="True" />
+  </Style>
+
+  <Style Selector="Button.message-action">
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="Padding" Value="8,3" />
+    <Setter Property="MinHeight" Value="24" />
+  </Style>
+
+  <Style Selector="Border.code-block">
+    <Setter Property="Background" Value="{DynamicResource ControlFillSecondaryBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Padding" Value="12,10" />
+    <Setter Property="Margin" Value="0,2,0,2" />
+  </Style>
+
+  <!--
+    过渡动画统一放在最后：所有状态色都改为渐变而不是瞬切，
+    并给可点击元素加轻微按压回弹，避免界面看起来生硬。
+  -->
+  <Style Selector="Button">
+    <Setter Property="RenderTransform" Value="none" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.12" Easing="CubicEaseOut" />
+      </Transitions>
+    </Setter>
+  </Style>
+
+  <Style Selector="Button:pressed">
+    <Setter Property="RenderTransform" Value="scale(0.97)" />
+  </Style>
+
+  <Style Selector="Button /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.14" Easing="CubicEaseOut" />
+        <BrushTransition Property="BorderBrush" Duration="0:0:0.14" Easing="CubicEaseOut" />
+      </Transitions>
+    </Setter>
+  </Style>
+
+  <Style Selector="TextBox /template/ Border#PART_BorderElement">
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.14" />
+        <BrushTransition Property="BorderBrush" Duration="0:0:0.14" />
+      </Transitions>
+    </Setter>
+  </Style>
+
+  <Style Selector="ComboBox /template/ Border#Background">
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.14" />
+        <BrushTransition Property="BorderBrush" Duration="0:0:0.14" />
+      </Transitions>
+    </Setter>
+  </Style>
+
+  <Style Selector="ComboBoxItem /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.12" />
+      </Transitions>
+    </Setter>
+  </Style>
+
+  <!-- 选中指示条长度与颜色一起过渡，切换页签时小蓝条是滑出来的 -->
+  <Style Selector="TabControl.nav > TabItem /template/ Border#NavIndicator">
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.18" Easing="CubicEaseOut" />
+        <DoubleTransition Property="Height" Duration="0:0:0.18" Easing="CubicEaseOut" />
+        <DoubleTransition Property="Width" Duration="0:0:0.18" Easing="CubicEaseOut" />
+      </Transitions>
+    </Setter>
+  </Style>
+
+  <!-- 未选中时指示条收成一个点，选中后再长开 -->
+  <Style Selector="TabControl.nav > TabItem /template/ Border#NavIndicator">
+    <Setter Property="Height" Value="2" />
+  </Style>
+
+  <Style Selector="TabControl.nav > TabItem:selected /template/ Border#NavIndicator">
+    <Setter Property="Height" Value="16" />
+  </Style>
+
+  <Style Selector="TabControl.nav.collapsed > TabItem /template/ Border#NavIndicator">
+    <Setter Property="Width" Value="4" />
+    <Setter Property="Height" Value="3" />
+  </Style>
+
+  <Style Selector="TabControl.nav.collapsed > TabItem:selected /template/ Border#NavIndicator">
+    <Setter Property="Width" Value="16" />
+    <Setter Property="Height" Value="3" />
+  </Style>
+
+  <Style Selector="TabItem /template/ ContentPresenter#NavContent">
+    <Setter Property="Transitions">
+      <Transitions>
+        <ThicknessTransition Property="Margin" Duration="0:0:0.18" Easing="CubicEaseOut" />
+      </Transitions>
+    </Setter>
+  </Style>
+
+  <Style Selector="Button.session-item /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.14" Easing="CubicEaseOut" />
+      </Transitions>
+    </Setter>
+  </Style>
+
+  <Style Selector="Border.metric-card">
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.18" />
+        <BrushTransition Property="BorderBrush" Duration="0:0:0.18" />
+      </Transitions>
+    </Setter>
+  </Style>
+
+  <!-- 消息操作按钮淡入淡出，避免鼠标经过时突然弹出 -->
+  <Style Selector="StackPanel.message-actions">
+    <Setter Property="Transitions">
+      <Transitions>
+        <DoubleTransition Property="Opacity" Duration="0:0:0.14" Easing="CubicEaseOut" />
+      </Transitions>
+    </Setter>
+  </Style>
+
+  <Style Selector="ToggleSwitch /template/ Border#SwitchKnobBounds">
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.16" Easing="CubicEaseOut" />
+        <BrushTransition Property="BorderBrush" Duration="0:0:0.16" Easing="CubicEaseOut" />
+      </Transitions>
+    </Setter>
+  </Style>
+
+  <!-- 新消息淡入并轻微上浮：入场动画只播一次 -->
+  <Style Selector="Grid.message-row">
+    <Style.Animations>
+      <Animation Duration="0:0:0.22" Easing="CubicEaseOut" FillMode="Forward">
+        <KeyFrame Cue="0%">
+          <Setter Property="Opacity" Value="0" />
+          <Setter Property="TranslateTransform.Y" Value="8" />
+        </KeyFrame>
+        <KeyFrame Cue="100%">
+          <Setter Property="Opacity" Value="1" />
+          <Setter Property="TranslateTransform.Y" Value="0" />
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+</Styles>

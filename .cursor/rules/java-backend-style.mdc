@@ -1,0 +1,40 @@
+---
+description: Java 21 Spring Boot 后端代码与模型生命周期规范
+globs: platform-server/**/*.java
+alwaysApply: false
+---
+
+# Java 后端规范
+
+- 使用 Java 21；包名全部小写，类、接口、枚举和注解使用 `PascalCase`。
+- 方法、参数、局部变量使用 `camelCase`；常量使用 `UPPER_SNAKE_CASE`。
+- 一个文件只放一个公共顶级类型；禁止通配符 import。
+- 使用构造器注入，不使用字段注入；优先不可变字段和不可变 DTO。
+- 简单 DTO 优先使用 `record`；数据库实体不得直接作为 API 响应。
+- 包按分层组织，不要按功能再拆一层平行包：
+  - `controller`：HTTP/SSE 协议入口
+  - `websocket`：WebSocket 处理器
+  - `service`：业务编排
+  - `repository`：SQL 与持久化
+  - `pojo.entity` / `pojo.dto` / `pojo.vo`：实体、请求入参、响应出参
+  - `infra.*`：外部进程、HTTP、硬件探测、密钥、Provider 适配
+  - `common` / `config`：跨层工具、错误、常量和配置
+- Controller 只负责协议转换和校验；业务规则放 Service；数据库访问放 Repository。
+- 使用明确的领域异常和统一错误响应；禁止捕获后只打印堆栈或返回空值。
+- 模型调用、进程管理、文件和远程 Provider 调用必须支持超时、取消和重试边界。
+- 流式接口必须显式发送完成、取消和错误事件；错误 payload 含稳定 `messageKey`，并尽量附带已本地化 `message`。
+- 后端返回用户可见消息时使用稳定的 `messageKey` 和参数，不在 Controller/Service 中硬编码中文或英文句子。
+- 日志不得记录用户完整提示词、访问令牌、密码、API Key 或模型敏感数据。
+- 使用 Spotless/Google Java Format；本地改动后执行 `mvn spotless:check`，有测试时再跑 `mvn test`（测试目录默认不入库）。
+- 数据库查询使用参数绑定；SQLite 向量表只能通过 `VectorStore` 抽象访问。
+- Schema 变更必须走可追踪迁移（`V*__*.sql` + `SchemaMigrator`），禁止只改实体不迁移。
+
+## 本地模型与远程模型
+
+- 应用启动不得自动加载 llamafile；必须由用户显式启动，并指定参数预设（profile）。
+- 模型运行中禁止切换模型、保存/覆盖运行参数、删除当前模型或当前预设；必须先停止。
+- `chatProvider` 为 `local` 时走 llamafile；为 `remote` 时走 OpenAI 兼容远程客户端。
+- 远程模型可有多份命名配置；密钥经 `SecretStore`（生产实现 `OsCredentialSecretStore`）存取，库中只存 `secretRef`。
+- 远程对话依赖联网总开关；关闭联网时拒绝远程请求，并用明确 `messageKey` 提示先开启联网。
+- llamafile 健康检查必须校验响应内容特征，不能只看 HTTP 状态码（避免把占用端口的其它本机服务误判为已就绪）。
+- 默认与迁移中的 llamafile 端口使用非常用端口；配置端口被占用时在本机寻找空闲端口并持久化。

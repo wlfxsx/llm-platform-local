@@ -1,0 +1,43 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:LlmPlatform.Desktop.ViewModels"
+             x:Class="LlmPlatform.Desktop.App"
+             x:DataType="vm:TrayViewModel"
+             RequestedThemeVariant="Default">
+  <Application.Styles>
+    <FluentTheme>
+      <FluentTheme.Palettes>
+        <ColorPaletteResources x:Key="Light"
+                               Accent="#005FB8"
+                               RegionColor="#F3F3F3"
+                               ChromeLow="#F2F2F2"
+                               ChromeMediumLow="#F2F2F2"
+                               ChromeMedium="#E6E6E6"
+                               ChromeHigh="#CCCCCC"
+                               ChromeAltLow="#171717"
+                               BaseHigh="#000000"
+                               AltHigh="#FFFFFF" />
+        <ColorPaletteResources x:Key="Dark"
+                               Accent="#60CDFF"
+                               RegionColor="#202020"
+                               ChromeLow="#2C2C2C"
+                               ChromeMediumLow="#2C2C2C"
+                               ChromeMedium="#2C2C2C"
+                               ChromeHigh="#767676"
+                               ChromeAltLow="#F2F2F2"
+                               BaseHigh="#FFFFFF"
+                               AltHigh="#000000" />
+      </FluentTheme.Palettes>
+    </FluentTheme>
+    <StyleInclude Source="avares://LlmPlatform.Desktop/Styles/WinUiTheme.axaml" />
+  </Application.Styles>
+
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://LlmPlatform.Desktop/Resources/Strings.zh.axaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Application.Resources>
+  <!-- 托盘图标在代码里创建：Windows 需要原生菜单才能避开任务栏，见 TrayIconService。 -->
+</Application>

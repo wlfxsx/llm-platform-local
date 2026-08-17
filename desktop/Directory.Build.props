@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <OutputPath>$(MSBuildThisFileDirectory)..\.me\build\desktop\bin\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>$(MSBuildThisFileDirectory)..\.me\build\desktop\obj\$(Configuration)\</IntermediateOutputPath>
+    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+</Project>

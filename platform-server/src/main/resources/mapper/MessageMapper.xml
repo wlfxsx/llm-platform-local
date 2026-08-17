@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.llmplatform.repository.mapper.MessageMapper">
+    <!-- SQLite 需要先按时间/rowid 倒序截取，再恢复正序，避免跨会话混入。 -->
+    <select id="selectRecentMessages" resultType="io.llmplatform.pojo.dto.ChatMessage">
+        SELECT role, content
+        FROM (
+            SELECT role, content, created_at, sequence_no, rowid AS message_order
+            FROM messages
+            WHERE session_id = #{sessionId}
+            ORDER BY created_at DESC, sequence_no DESC, rowid DESC
+            LIMIT #{limit}
+        )
+        ORDER BY created_at ASC, sequence_no ASC, message_order ASC
+    </select>
+</mapper>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.llmplatform.repository.mapper.SessionMapper">
+    <!-- 会话在首条消息发送时才由对话流程创建；异常中断留下的空会话不应出现在列表里。 -->
+    <select id="selectWithMessages" resultType="io.llmplatform.repository.entity.SessionEntity">
+        SELECT id, title, created_at, updated_at, next_sequence
+        FROM sessions
+        WHERE EXISTS (SELECT 1 FROM messages WHERE messages.session_id = sessions.id)
+        ORDER BY updated_at DESC
+    </select>
+
+    <!-- 单条 UPDATE 同时推进序号与活跃时间，供消息插入事务读取已分配序号。 -->
+    <update id="incrementSequence">
+        UPDATE sessions
+        SET next_sequence = next_sequence + 1,
+            updated_at = #{now}
+        WHERE id = #{id}
+    </update>
+</mapper>

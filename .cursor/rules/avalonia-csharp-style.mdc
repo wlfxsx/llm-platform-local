@@ -1,0 +1,30 @@
+---
+description: Avalonia C# 桌面端 MVVM、主题与托盘规范
+globs: desktop/**/*.{cs,csx,axaml,xaml}
+alwaysApply: false
+---
+
+# Avalonia / C# 规范
+
+- 开启 nullable reference types；类型、公开成员、属性、命令和事件使用 `PascalCase`。
+- 私有字段使用 `_camelCase`；参数和局部变量使用 `camelCase`；接口以 `I` 开头。
+- 异步方法以 `Async` 结尾；可取消操作必须接收并传递 `CancellationToken`。
+- 使用 file-scoped namespace；避免深层嵌套，优先早返回和明确的状态转换。
+- ViewModel 基于 CommunityToolkit.Mvvm（`ObservableProperty` / `RelayCommand`）；不直接操作具体控件。
+- View 只保留必要的视图初始化、滚动/快捷键和窗口生命周期；业务逻辑不得写入 code-behind。
+- HTTP、SSE、WebSocket、文件和进程资源使用异步 API，并正确释放。
+- Avalonia 用户可见文本、提示、错误、确认和进度消息不得硬编码；统一从中文/英文资源读取。
+- 应用语言切换后刷新当前资源字典和新消息；ViewModel 不缓存固定语言的展示文本。
+- XAML 绑定名称、资源键和可访问名称使用稳定、有语义的 `PascalCase`。
+- 不使用 `!` 运算符掩盖未解决的空值问题。
+- 提交前执行 `dotnet format --verify-no-changes`、`dotnet build`；有测试工程时再跑 `dotnet test`。
+
+## UI 与平台行为
+
+- 主题与强调色：视觉跟随 Fluent/WinUI 风格；彩色控件（按钮、开关、导航指示条、监控曲线）跟随系统强调色。
+- 常规设置即改即存，不提供多余的“保存/刷新”主路径；加载完成前禁止把默认值写回服务端。
+- SSE/后台线程更新绑定属性时必须切回 UI 线程（`Dispatcher.UIThread`），否则界面会冻结或抛跨线程异常。
+- 对话窗口：会话侧栏可折叠；长标题不得挤掉删除按钮；消息区禁用水平滚动并保证贴底时可看到最后一行。
+- 前置条件未满足时（如未开联网却开远程/能力联网）必须显示明确提示，不能只禁用控件而无说明。
+- Windows 托盘菜单使用原生实现，按显示器工作区定位，不得遮挡任务栏；菜单深浅色跟随应用主题。
+- 退出时经统一关机路径结束本机服务与模型进程；窗口关闭默认藏到托盘，不直接结束进程。

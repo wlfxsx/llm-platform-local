@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.llmplatform.repository.mapper.PluginCapabilityMapper">
+    <!-- 空行表示插件未声明覆盖，由上层继续采用全局能力值。 -->
+    <select id="selectEnabled" resultType="java.lang.Boolean">
+        SELECT CASE enabled WHEN 1 THEN 1 ELSE 0 END
+        FROM plugin_capabilities
+        WHERE plugin_id = #{pluginId} AND capability_id = #{capabilityId}
+    </select>
+
+    <!-- 复合键冲突时只替换开关值。 -->
+    <insert id="upsertEnabled">
+        INSERT INTO plugin_capabilities(plugin_id, capability_id, enabled)
+        VALUES(#{pluginId}, #{capabilityId}, #{enabled})
+        ON CONFLICT(plugin_id, capability_id) DO UPDATE SET enabled = excluded.enabled
+    </insert>
+
+    <!-- 插件删除事务按 plugin_id 一次清理全部关联。 -->
+    <delete id="deleteByPluginId">
+        DELETE FROM plugin_capabilities WHERE plugin_id = #{pluginId}
+    </delete>
+</mapper>

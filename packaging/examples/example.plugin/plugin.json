@@ -1,0 +1,12 @@
+{
+  "id": "example.plugin",
+  "name": "Example Plugin",
+  "version": "0.1.0",
+  "entry": "placeholder",
+  "capabilities": {
+    "ai.chat": { "required": true },
+    "memory": { "required": false, "enabledByDefault": false },
+    "rag": { "required": false, "enabledByDefault": true },
+    "network": { "required": false, "enabledByDefault": false }
+  }
+}

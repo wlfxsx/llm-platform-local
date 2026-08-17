@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.llmplatform.repository.mapper.CapabilityMapper">
+    <!-- 显式归一化 SQLite 整数布尔值，避免驱动返回类型差异泄漏到业务层。 -->
+    <select id="selectEnabled" resultType="java.lang.Boolean">
+        SELECT CASE enabled WHEN 1 THEN 1 ELSE 0 END
+        FROM capabilities
+        WHERE id = #{id}
+    </select>
+
+    <!-- SQLite ON CONFLICT 保证并发更新时仍维持每项能力一行。 -->
+    <insert id="upsertEnabled">
+        INSERT INTO capabilities(id, enabled) VALUES(#{id}, #{enabled})
+        ON CONFLICT(id) DO UPDATE SET enabled = excluded.enabled
+    </insert>
+
+    <!-- 启动种子不能覆盖用户之前保存的开关。 -->
+    <insert id="insertDefault">
+        INSERT OR IGNORE INTO capabilities(id, enabled) VALUES(#{id}, #{enabled})
+    </insert>
+</mapper>

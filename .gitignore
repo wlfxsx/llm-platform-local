@@ -1,0 +1,102 @@
+# 仅开发机：本机数据、构建产物、密钥与临时文件（不得提交、不得打进安装包）
+.me/
+
+# IDE / 编辑器本地状态（规则可提交；计划与个人设置不提交）
+.cursor/plans/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Java / Maven（正式输出已重定向到 .me/build，本地残留也忽略）
+target/
+*.class
+*.jar
+*.war
+*.ear
+hs_err_pid*
+replay_pid*
+
+# .NET / Avalonia（正式输出已重定向到 .me/build，本地残留也忽略）
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+*.nupkg
+project.lock.json
+artifacts/
+
+# 操作系统与编辑器杂项
+.DS_Store
+Thumbs.db
+Desktop.ini
+*~
+*.swp
+*.swo
+
+# ---------- 隐私与本机敏感内容（误放进仓库时的兜底） ----------
+
+# 环境变量与常见密钥文件（正式 API Key 走 OS 凭据库，不入库）
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+credentials.json
+secrets.json
+local.properties
+**/application-local.yml
+**/application-local.yaml
+**/application-local.properties
+
+# 本机数据库与 WAL（正式库在用户数据目录；误拷到仓库也要挡掉）
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# 模型权重与大型推理产物
+*.gguf
+*.ggml
+*.safetensors
+*.onnx
+*.ckpt
+*.pt
+*.pth
+
+# 日志与临时输出
+*.log
+logs/
+tmp/
+temp/
+*.tmp
+*.bak
+*.orig
+
+# MCP / 本机工具配置（常含令牌与路径）
+.mcp.json
+mcp.json
+**/claude_desktop_config.json
+
+# 打包产物目录（脚本本身可提交）
+packaging/dist/
+packaging/out/
+packaging/Output/
+*.iss.bak
+
+# 测试代码仅本机保留，不上传仓库（工作区仍可本地跑测）
+platform-server/src/test/
+**/src/test/

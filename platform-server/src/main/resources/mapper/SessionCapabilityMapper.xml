@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.llmplatform.repository.mapper.SessionCapabilityMapper">
+    <!-- 空行表示继承全局值，存在行才形成会话级覆盖。 -->
+    <select id="selectEnabled" resultType="java.lang.Boolean">
+        SELECT CASE enabled WHEN 1 THEN 1 ELSE 0 END
+        FROM session_capabilities
+        WHERE session_id = #{sessionId} AND capability_id = #{capabilityId}
+    </select>
+
+    <!-- 复合键冲突时只更新 enabled，保持会话与能力标识不变。 -->
+    <insert id="upsertEnabled">
+        INSERT INTO session_capabilities(session_id, capability_id, enabled)
+        VALUES(#{sessionId}, #{capabilityId}, #{enabled})
+        ON CONFLICT(session_id, capability_id) DO UPDATE SET enabled = excluded.enabled
+    </insert>
+</mapper>

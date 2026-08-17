@@ -1,0 +1,1117 @@
+<views:FluentWindow xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:vm="using:LlmPlatform.Desktop.ViewModels"
+                    xmlns:views="using:LlmPlatform.Desktop.Views"
+                    xmlns:ctrl="using:LlmPlatform.Desktop.Controls"
+                    x:Class="LlmPlatform.Desktop.Views.SettingsWindow"
+                    x:DataType="vm:TrayViewModel"
+                    Title="{DynamicResource TraySettings}"
+                    Icon="/Assets/tray.ico"
+                    Width="900"
+                    Height="640"
+                    MinWidth="720"
+                    MinHeight="520"
+                    WindowStartupLocation="CenterScreen">
+  <!-- 左侧导航把通用、模型、监控、能力、数据、插件分区，避免单页堆叠所有设置。 -->
+  <TabControl Classes="nav"
+              Classes.collapsed="{Binding NavCollapsed}"
+              Name="SettingsTabs"
+              SelectionChanged="OnSettingsTabChanged">
+    <TabItem>
+      <TabItem.Header>
+        <StackPanel Orientation="Horizontal" Spacing="10" ToolTip.Tip="{DynamicResource TabGeneral}">
+          <ctrl:FluentIcon Kind="Settings" />
+          <TextBlock Classes="nav-label" VerticalAlignment="Center" Text="{DynamicResource TabGeneral}" />
+        </StackPanel>
+      </TabItem.Header>
+      <ScrollViewer>
+        <StackPanel Margin="28,20,28,24" Spacing="0" DataContext="{Binding Settings}">
+          <!-- 常规页的每一项改动都立即写回服务端，因此不再提供保存与刷新入口 -->
+          <TextBlock Classes="title" Margin="0,0,0,16" Text="{DynamicResource TabGeneral}" />
+
+          <Border Classes="settings-group">
+            <StackPanel>
+              <Border Classes="settings-row">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <ctrl:FluentIcon Kind="Globe" Margin="0,0,16,0" VerticalAlignment="Center" />
+                  <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{DynamicResource Language}" />
+                    <TextBlock Classes="caption" Text="{DynamicResource LanguageDesc}" />
+                  </StackPanel>
+                  <ComboBox Grid.Column="2"
+                            ItemsSource="{Binding Languages}"
+                            SelectedItem="{Binding SelectedLanguage}">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate x:DataType="vm:OptionItemViewModel">
+                        <TextBlock Text="{Binding Display}" />
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                </Grid>
+              </Border>
+              <Border Classes="divider" />
+              <Border Classes="settings-row">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <ctrl:FluentIcon Kind="Theme" Margin="0,0,16,0" VerticalAlignment="Center" />
+                  <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{DynamicResource Theme}" />
+                    <TextBlock Classes="caption" Text="{DynamicResource ThemeDesc}" />
+                  </StackPanel>
+                  <ComboBox Grid.Column="2"
+                            ItemsSource="{Binding Themes}"
+                            SelectedItem="{Binding SelectedTheme}">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate x:DataType="vm:OptionItemViewModel">
+                        <TextBlock Text="{Binding Display}" />
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                </Grid>
+              </Border>
+              <Border Classes="divider" />
+              <Border Classes="settings-row">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <ctrl:FluentIcon Kind="Network" Margin="0,0,16,0" VerticalAlignment="Center" />
+                  <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{DynamicResource Network}" />
+                    <TextBlock Classes="caption" Text="{DynamicResource NetworkDesc}" />
+                  </StackPanel>
+                  <ToggleSwitch Grid.Column="2" IsChecked="{Binding NetworkEnabled}" />
+                </Grid>
+              </Border>
+            </StackPanel>
+          </Border>
+
+          <!-- 模型的选择与启停属于日常操作，放在常规页；模型页只负责调参 -->
+          <Grid ColumnDefinitions="Auto,*">
+            <TextBlock Classes="group-title" Text="{DynamicResource TabModels}" />
+            <!-- 联网关闭会锁住整块远程配置，提示跟在分组标题后面，不占用独立行 -->
+            <StackPanel Grid.Column="1"
+                        Orientation="Horizontal"
+                        Spacing="6"
+                        Margin="12,20,0,8"
+                        VerticalAlignment="Center"
+                        IsVisible="{Binding ShowRemoteNetworkHint}">
+              <ctrl:FluentIcon Kind="Warning" Classes="hint" Width="14" Height="14" VerticalAlignment="Center" />
+              <TextBlock Classes="caption hint" VerticalAlignment="Center" Text="{Binding RemoteNetworkHint}" />
+            </StackPanel>
+          </Grid>
+          <Border Classes="settings-group">
+            <StackPanel>
+              <Border Classes="settings-row">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <ctrl:FluentIcon Kind="Models" Margin="0,0,16,0" VerticalAlignment="Center" />
+                  <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{DynamicResource ChatProvider}" />
+                    <TextBlock Classes="caption" Text="{DynamicResource ChatProviderDesc}" />
+                  </StackPanel>
+                  <ComboBox Grid.Column="2"
+                            MinWidth="148"
+                            ItemsSource="{Binding ChatProviders}"
+                            SelectedItem="{Binding SelectedChatProvider}">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate x:DataType="vm:OptionItemViewModel">
+                        <TextBlock Text="{Binding Display}" />
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                </Grid>
+              </Border>
+              <Border Classes="divider" />
+
+              <!-- 本地：GGUF、硬件、预设、启停 -->
+              <StackPanel IsVisible="{Binding IsLocalChat}">
+              <Border Classes="settings-row">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <ctrl:FluentIcon Kind="Models" Margin="0,0,16,0" VerticalAlignment="Center" />
+                  <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{DynamicResource Models}" />
+                    <TextBlock Classes="caption" Text="{DynamicResource ModelsDesc}" />
+                  </StackPanel>
+                  <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                    <!-- 模型文件名较长，固定宽度并截断，避免撑开整行挤掉标题与按钮 -->
+                    <ComboBox Width="240"
+                              IsEnabled="{Binding CanEditModel}"
+                              ItemsSource="{Binding Models}"
+                              SelectedItem="{Binding SelectedModel}">
+                      <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ModelItemViewModel">
+                          <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                        </DataTemplate>
+                      </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <Button Content="{DynamicResource ImportModel}"
+                            Command="{Binding ImportModelCommand}" />
+                    <Button Content="{DynamicResource DeleteModel}"
+                            Command="{Binding DeleteModelCommand}"
+                            IsEnabled="{Binding CanEditModel}" />
+                  </StackPanel>
+                </Grid>
+              </Border>
+              <Border Classes="divider" />
+              <Border Classes="settings-row">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <ctrl:FluentIcon Kind="Hardware" Margin="0,0,16,0" VerticalAlignment="Center" />
+                  <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{DynamicResource InferenceDevice}" />
+                    <TextBlock Classes="caption" Text="{DynamicResource InferenceDeviceDesc}" />
+                  </StackPanel>
+                  <ComboBox Grid.Column="2"
+                            Width="240"
+                            IsEnabled="{Binding CanEditModel}"
+                            ItemsSource="{Binding Hardware}"
+                            SelectedItem="{Binding SelectedHardware}">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate x:DataType="vm:HardwareItemViewModel">
+                        <TextBlock Text="{Binding Display}" TextTrimming="CharacterEllipsis" />
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                </Grid>
+              </Border>
+              <Border Classes="divider" />
+              <Border Classes="settings-row">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <ctrl:FluentIcon Kind="Settings" Margin="0,0,16,0" VerticalAlignment="Center" />
+                  <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{DynamicResource StartupProfile}" />
+                    <TextBlock Classes="caption" Text="{DynamicResource StartupProfileDesc}" />
+                  </StackPanel>
+                  <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                    <ComboBox Width="240"
+                              IsEnabled="{Binding CanEditModel}"
+                              ItemsSource="{Binding Profiles}"
+                              SelectedItem="{Binding SelectedProfile}">
+                      <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ProfileItemViewModel">
+                          <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                        </DataTemplate>
+                      </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <!-- 删除针对的是这里选中的预设，因此与选择框放在同一行 -->
+                    <Button Content="{DynamicResource DeleteProfile}"
+                            Command="{Binding DeleteProfileCommand}"
+                            IsEnabled="{Binding CanEditModel}" />
+                  </StackPanel>
+                </Grid>
+              </Border>
+              <Border Classes="divider" />
+              <Border Classes="settings-row">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <ctrl:FluentIcon Kind="Models" Margin="0,0,16,0" VerticalAlignment="Center" />
+                  <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{DynamicResource UseCurrentModel}" />
+                    <TextBlock Classes="caption" Text="{Binding ModelRuntimeStatus}" />
+                  </StackPanel>
+                  <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                    <Button Classes="accent"
+                            Content="{DynamicResource StartModel}"
+                            Command="{Binding StartLlamafileCommand}"
+                            IsEnabled="{Binding CanStartModel}" />
+                    <Button Content="{DynamicResource StopModel}"
+                            Command="{Binding StopLlamafileCommand}"
+                            IsEnabled="{Binding CanStopModel}" />
+                  </StackPanel>
+                </Grid>
+              </Border>
+              </StackPanel>
+
+              <!-- 远程：多命名 OpenAI 兼容配置 -->
+              <StackPanel IsVisible="{Binding IsRemoteChat}">
+              <Border Classes="settings-row">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <ctrl:FluentIcon Kind="Globe" Margin="0,0,16,0" VerticalAlignment="Center" />
+                  <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{DynamicResource RemoteModels}" />
+                  </StackPanel>
+                  <StackPanel Grid.Column="2"
+                              Orientation="Horizontal"
+                              VerticalAlignment="Center"
+                              Spacing="8">
+                    <ComboBox Width="240"
+                              IsEnabled="{Binding CanEditRemote}"
+                              ItemsSource="{Binding RemoteModels}"
+                              SelectedItem="{Binding SelectedRemoteModel}">
+                      <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:RemoteModelItemViewModel">
+                          <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                        </DataTemplate>
+                      </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <Button Content="{DynamicResource NewRemoteModel}"
+                            Command="{Binding NewRemoteModelCommand}"
+                            IsEnabled="{Binding CanEditRemote}" />
+                    <Button Content="{DynamicResource DeleteRemoteModel}"
+                            Command="{Binding DeleteRemoteModelCommand}"
+                            IsEnabled="{Binding CanDeleteRemote}" />
+                  </StackPanel>
+                </Grid>
+              </Border>
+              <Border Classes="divider" />
+              <Border Classes="settings-row">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <ctrl:FluentIcon Kind="Document" Margin="0,0,16,0" VerticalAlignment="Center" />
+                  <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{DynamicResource RemoteName}" />
+                  </StackPanel>
+                  <TextBox Grid.Column="2"
+                           Width="240"
+                           IsEnabled="{Binding CanEditRemote}"
+                           Text="{Binding RemoteName}" />
+                </Grid>
+              </Border>
+              <Border Classes="divider" />
+              <Border Classes="settings-row">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <ctrl:FluentIcon Kind="Network" Margin="0,0,16,0" VerticalAlignment="Center" />
+                  <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{DynamicResource RemoteBaseUrl}" />
+                  </StackPanel>
+                  <TextBox Grid.Column="2"
+                           Width="280"
+                           IsEnabled="{Binding CanEditRemote}"
+                           Text="{Binding RemoteBaseUrl}" />
+                </Grid>
+              </Border>
+              <Border Classes="divider" />
+              <Border Classes="settings-row">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <ctrl:FluentIcon Kind="Models" Margin="0,0,16,0" VerticalAlignment="Center" />
+                  <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{DynamicResource RemoteModelName}" />
+                  </StackPanel>
+                  <TextBox Grid.Column="2"
+                           Width="240"
+                           IsEnabled="{Binding CanEditRemote}"
+                           Text="{Binding RemoteModelName}" />
+                </Grid>
+              </Border>
+              <Border Classes="divider" />
+              <Border Classes="settings-row">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <ctrl:FluentIcon Kind="Settings" Margin="0,0,16,0" VerticalAlignment="Center" />
+                  <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{DynamicResource RemoteApiKey}" />
+                  </StackPanel>
+                  <StackPanel Grid.Column="2"
+                              Orientation="Horizontal"
+                              VerticalAlignment="Center"
+                              Spacing="8">
+                    <TextBox Width="240"
+                             Height="32"
+                             VerticalContentAlignment="Center"
+                             PasswordChar="•"
+                             IsEnabled="{Binding CanEditRemote}"
+                             Text="{Binding RemoteApiKey}" />
+                    <Button Classes="accent"
+                            Content="{DynamicResource SaveRemoteModel}"
+                            Command="{Binding SaveRemoteModelCommand}"
+                            IsEnabled="{Binding CanSaveRemote}" />
+                    <Button Content="{DynamicResource TestRemoteModel}"
+                            Command="{Binding TestRemoteModelCommand}"
+                            IsEnabled="{Binding CanTestRemote}" />
+                  </StackPanel>
+                </Grid>
+              </Border>
+              <Border Classes="divider" />
+              <Border Classes="settings-row">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <ctrl:FluentIcon Kind="Models" Margin="0,0,16,0" VerticalAlignment="Center" />
+                  <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{DynamicResource UseCurrentModel}" />
+                    <TextBlock Classes="caption" Text="{Binding ModelRuntimeStatus}" />
+                  </StackPanel>
+                </Grid>
+              </Border>
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <TextBlock Classes="caption" Margin="2,10,0,0" Text="{Binding RestartHint}" />
+        </StackPanel>
+      </ScrollViewer>
+    </TabItem>
+
+    <TabItem>
+      <TabItem.Header>
+        <StackPanel Orientation="Horizontal" Spacing="10" ToolTip.Tip="{DynamicResource TabModels}">
+          <ctrl:FluentIcon Kind="Models" />
+          <TextBlock Classes="nav-label" VerticalAlignment="Center" Text="{DynamicResource TabModels}" />
+        </StackPanel>
+      </TabItem.Header>
+      <ScrollViewer>
+        <StackPanel Margin="28,20,28,24" Spacing="0" DataContext="{Binding Settings}">
+          <!-- 参数只以预设为单位保存，因此保存入口固定在顶部而不是页尾 -->
+          <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,16">
+            <StackPanel VerticalAlignment="Center" Spacing="2">
+              <TextBlock Classes="title" Text="{DynamicResource ModelParameters}" />
+              <TextBlock Classes="caption" Text="{Binding ProfileHint}" />
+            </StackPanel>
+            <Button Grid.Column="1"
+                    Classes="accent"
+                    VerticalAlignment="Center"
+                    Content="{DynamicResource SaveProfile}"
+                    Command="{Binding SaveProfileCommand}"
+                    IsEnabled="{Binding CanSaveModelConfig}" />
+          </Grid>
+
+          <StackPanel IsEnabled="{Binding CanEditModel}">
+            <!-- 预设名与其它设置行同构，明确当前参数会写入哪个预设 -->
+            <TextBlock Classes="group-title" Text="{DynamicResource ProfileSection}" />
+            <Border Classes="settings-group">
+              <Border Classes="settings-row">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <ctrl:FluentIcon Kind="Document" Margin="0,0,16,0" VerticalAlignment="Center" />
+                  <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{DynamicResource ProfileName}" />
+                    <TextBlock Classes="caption" Text="{DynamicResource ProfileNameDesc}" />
+                  </StackPanel>
+                  <TextBox Grid.Column="2"
+                           Width="220"
+                           VerticalAlignment="Center"
+                           Watermark="{DynamicResource ProfileName}"
+                           Text="{Binding ProfileName}" />
+                </Grid>
+              </Border>
+            </Border>
+
+            <!-- 运行参数会影响 llamafile 进程布局，因此与下一请求即时生效的采样参数分组。 -->
+            <TextBlock Classes="group-title" Text="{DynamicResource ModelRuntime}" />
+            <Border Classes="settings-group">
+              <StackPanel>
+                <Border Classes="settings-row">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                      <TextBlock Text="{DynamicResource ContextSize}" />
+                      <TextBlock Classes="caption" Text="{DynamicResource ContextSizeDesc}" />
+                    </StackPanel>
+                    <NumericUpDown Grid.Column="1" Minimum="256" Maximum="131072" Increment="256"
+                                   Value="{Binding ContextSize}" />
+                  </Grid>
+                </Border>
+                <Border Classes="divider" />
+                <Border Classes="settings-row">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                      <TextBlock Text="{DynamicResource Threads}" />
+                      <TextBlock Classes="caption" Text="{DynamicResource ThreadsDesc}" />
+                    </StackPanel>
+                    <NumericUpDown Grid.Column="1" Minimum="1" Maximum="256" Increment="1"
+                                   Value="{Binding Threads}" />
+                  </Grid>
+                </Border>
+                <Border Classes="divider" />
+                <Border Classes="settings-row">
+                  <Grid ColumnDefinitions="*,Auto,Auto">
+                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                      <TextBlock Text="{DynamicResource GpuLayers}" />
+                      <TextBlock Classes="caption" Text="{DynamicResource GpuLayersDesc}" />
+                    </StackPanel>
+                    <ToggleSwitch Grid.Column="1"
+                                  Margin="0,0,12,0"
+                                  OnContent="{DynamicResource Automatic}"
+                                  OffContent="{DynamicResource Manual}"
+                                  IsChecked="{Binding GpuLayersAuto}" />
+                    <NumericUpDown Grid.Column="2" Minimum="0" Maximum="999" Increment="1"
+                                   IsEnabled="{Binding CanEditGpuLayers}"
+                                   Value="{Binding GpuLayers}" />
+                  </Grid>
+                </Border>
+                <Border Classes="divider" />
+                <Border Classes="settings-row">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                      <TextBlock Text="{DynamicResource BatchSize}" />
+                      <TextBlock Classes="caption" Text="{DynamicResource BatchSizeDesc}" />
+                    </StackPanel>
+                    <NumericUpDown Grid.Column="1" Minimum="1" Maximum="8192" Increment="32"
+                                   Value="{Binding BatchSize}" />
+                  </Grid>
+                </Border>
+                <Border Classes="divider" />
+                <Border Classes="settings-row">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                      <TextBlock Text="{DynamicResource UbatchSize}" />
+                      <TextBlock Classes="caption" Text="{DynamicResource UbatchSizeDesc}" />
+                    </StackPanel>
+                    <NumericUpDown Grid.Column="1" Minimum="1" Maximum="8192" Increment="32"
+                                   Value="{Binding UbatchSize}" />
+                  </Grid>
+                </Border>
+                <Border Classes="divider" />
+                <Border Classes="settings-row">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                      <TextBlock Text="{DynamicResource FlashAttention}" />
+                      <TextBlock Classes="caption" Text="{DynamicResource FlashAttentionDesc}" />
+                    </StackPanel>
+                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding FlashAttention}" />
+                  </Grid>
+                </Border>
+                <Border Classes="divider" />
+                <Border Classes="settings-row">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                      <TextBlock Text="{DynamicResource MemoryMap}" />
+                      <TextBlock Classes="caption" Text="{DynamicResource MemoryMapDesc}" />
+                    </StackPanel>
+                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding MemoryMap}" />
+                  </Grid>
+                </Border>
+                <Border Classes="divider" />
+                <Border Classes="settings-row">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                      <TextBlock Text="{DynamicResource MemoryLock}" />
+                      <TextBlock Classes="caption" Text="{DynamicResource MemoryLockDesc}" />
+                    </StackPanel>
+                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding MemoryLock}" />
+                  </Grid>
+                </Border>
+              </StackPanel>
+            </Border>
+
+            <!-- 采样参数不改变进程内存布局，保存后由下一次推理请求直接读取。 -->
+            <TextBlock Classes="group-title" Text="{DynamicResource ModelSampling}" />
+            <Border Classes="settings-group">
+              <StackPanel>
+                <Border Classes="settings-row">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                      <TextBlock Text="{DynamicResource Temperature}" />
+                      <TextBlock Classes="caption" Text="{DynamicResource TemperatureDesc}" />
+                    </StackPanel>
+                    <NumericUpDown Grid.Column="1" Minimum="0" Maximum="2" Increment="0.05" FormatString="0.00"
+                                   Value="{Binding Temperature}" />
+                  </Grid>
+                </Border>
+                <Border Classes="divider" />
+                <Border Classes="settings-row">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                      <TextBlock Text="{DynamicResource TopP}" />
+                      <TextBlock Classes="caption" Text="{DynamicResource TopPDesc}" />
+                    </StackPanel>
+                    <NumericUpDown Grid.Column="1" Minimum="0" Maximum="1" Increment="0.05" FormatString="0.00"
+                                   Value="{Binding TopP}" />
+                  </Grid>
+                </Border>
+                <Border Classes="divider" />
+                <Border Classes="settings-row">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                      <TextBlock Text="{DynamicResource TopK}" />
+                      <TextBlock Classes="caption" Text="{DynamicResource TopKDesc}" />
+                    </StackPanel>
+                    <NumericUpDown Grid.Column="1" Minimum="0" Maximum="200" Increment="1" Value="{Binding TopK}" />
+                  </Grid>
+                </Border>
+                <Border Classes="divider" />
+                <Border Classes="settings-row">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                      <TextBlock Text="{DynamicResource MinP}" />
+                      <TextBlock Classes="caption" Text="{DynamicResource MinPDesc}" />
+                    </StackPanel>
+                    <NumericUpDown Grid.Column="1" Minimum="0" Maximum="1" Increment="0.01" FormatString="0.00"
+                                   Value="{Binding MinP}" />
+                  </Grid>
+                </Border>
+                <Border Classes="divider" />
+                <Border Classes="settings-row">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                      <TextBlock Text="{DynamicResource MaxTokens}" />
+                      <TextBlock Classes="caption" Text="{DynamicResource MaxTokensDesc}" />
+                    </StackPanel>
+                    <NumericUpDown Grid.Column="1" Minimum="1" Maximum="32768" Increment="64"
+                                   Value="{Binding MaxTokens}" />
+                  </Grid>
+                </Border>
+                <Border Classes="divider" />
+                <Border Classes="settings-row">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                      <TextBlock Text="{DynamicResource RepeatPenalty}" />
+                      <TextBlock Classes="caption" Text="{DynamicResource RepeatPenaltyDesc}" />
+                    </StackPanel>
+                    <NumericUpDown Grid.Column="1" Minimum="0" Maximum="2" Increment="0.05" FormatString="0.00"
+                                   Value="{Binding RepeatPenalty}" />
+                  </Grid>
+                </Border>
+                <Border Classes="divider" />
+                <Border Classes="settings-row">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                      <TextBlock Text="{DynamicResource RepeatLastN}" />
+                      <TextBlock Classes="caption" Text="{DynamicResource RepeatLastNDesc}" />
+                    </StackPanel>
+                    <NumericUpDown Grid.Column="1" Minimum="0" Maximum="2048" Increment="8"
+                                   Value="{Binding RepeatLastN}" />
+                  </Grid>
+                </Border>
+                <Border Classes="divider" />
+                <Border Classes="settings-row">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                      <TextBlock Text="{DynamicResource Seed}" />
+                      <TextBlock Classes="caption" Text="{DynamicResource SeedDesc}" />
+                    </StackPanel>
+                    <TextBox Grid.Column="1" Width="148" VerticalAlignment="Center"
+                             Watermark="auto" Text="{Binding SeedText}" />
+                  </Grid>
+                </Border>
+                <Border Classes="divider" />
+                <Border Classes="settings-row">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                      <TextBlock Text="{DynamicResource FrequencyPenalty}" />
+                      <TextBlock Classes="caption" Text="{DynamicResource FrequencyPenaltyDesc}" />
+                    </StackPanel>
+                    <NumericUpDown Grid.Column="1" Minimum="0" Maximum="2" Increment="0.05" FormatString="0.00"
+                                   Value="{Binding FrequencyPenalty}" />
+                  </Grid>
+                </Border>
+                <Border Classes="divider" />
+                <Border Classes="settings-row">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                      <TextBlock Text="{DynamicResource PresencePenalty}" />
+                      <TextBlock Classes="caption" Text="{DynamicResource PresencePenaltyDesc}" />
+                    </StackPanel>
+                    <NumericUpDown Grid.Column="1" Minimum="-2" Maximum="2" Increment="0.05" FormatString="0.00"
+                                   Value="{Binding PresencePenalty}" />
+                  </Grid>
+                </Border>
+                <Border Classes="divider" />
+                <Border Classes="settings-row">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                      <TextBlock Text="{DynamicResource StopSequences}" />
+                      <TextBlock Classes="caption" Text="{DynamicResource StopSequencesDesc}" />
+                    </StackPanel>
+                    <TextBox Grid.Column="1" Width="220" VerticalAlignment="Center"
+                             Text="{Binding StopText}" />
+                  </Grid>
+                </Border>
+              </StackPanel>
+            </Border>
+
+            <!-- 压缩策略属于模型上下文预算，不与应用级会话开关混合。 -->
+            <TextBlock Classes="group-title" Text="{DynamicResource ModelCompression}" />
+            <Border Classes="settings-group">
+              <StackPanel>
+                <Border Classes="settings-row">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                      <TextBlock Text="{DynamicResource CompressionEnabled}" />
+                      <TextBlock Classes="caption" Text="{DynamicResource CompressionEnabledDesc}" />
+                    </StackPanel>
+                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding CompressionEnabled}" />
+                  </Grid>
+                </Border>
+                <Border Classes="divider" />
+                <Border Classes="settings-row">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                      <TextBlock Text="{DynamicResource CompressionTrigger}" />
+                      <TextBlock Classes="caption" Text="{DynamicResource CompressionTriggerDesc}" />
+                    </StackPanel>
+                    <NumericUpDown Grid.Column="1" Minimum="0.1" Maximum="1" Increment="0.05" FormatString="0.00"
+                                   Value="{Binding CompressionTriggerRatio}" />
+                  </Grid>
+                </Border>
+                <Border Classes="divider" />
+                <Border Classes="settings-row">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                      <TextBlock Text="{DynamicResource KeepRecentMessages}" />
+                      <TextBlock Classes="caption" Text="{DynamicResource KeepRecentMessagesDesc}" />
+                    </StackPanel>
+                    <NumericUpDown Grid.Column="1" Minimum="1" Maximum="200" Increment="1"
+                                   Value="{Binding KeepRecentMessages}" />
+                  </Grid>
+                </Border>
+                <Border Classes="divider" />
+                <Border Classes="settings-row">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                      <TextBlock Text="{DynamicResource SummaryMaxTokens}" />
+                      <TextBlock Classes="caption" Text="{DynamicResource SummaryMaxTokensDesc}" />
+                    </StackPanel>
+                    <NumericUpDown Grid.Column="1" Minimum="32" Maximum="4096" Increment="32"
+                                   Value="{Binding SummaryMaxTokens}" />
+                  </Grid>
+                </Border>
+              </StackPanel>
+            </Border>
+
+            <!-- 高级参数保留原始 JSON 结构，提交前在 ViewModel 与后端各校验一次。 -->
+            <TextBlock Classes="group-title" Text="{DynamicResource ModelAdvanced}" />
+            <Border Classes="settings-group">
+              <StackPanel>
+                <Border Classes="settings-row">
+                  <StackPanel Spacing="8">
+                    <TextBlock Text="{DynamicResource AdvancedJson}" />
+                    <TextBlock Classes="caption" Text="{DynamicResource AdvancedJsonDesc}" />
+                    <TextBox AcceptsReturn="True"
+                             Height="120"
+                             TextWrapping="Wrap"
+                             FontFamily="Consolas, Cascadia Mono, monospace"
+                             Text="{Binding AdvancedJson}" />
+                    <TextBlock Classes="caption"
+                               Foreground="#E81123"
+                               IsVisible="{Binding !AdvancedJsonValid}"
+                               Text="{Binding AdvancedJsonError}" />
+                  </StackPanel>
+                </Border>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </StackPanel>
+      </ScrollViewer>
+    </TabItem>
+
+    <TabItem>
+      <TabItem.Header>
+        <StackPanel Orientation="Horizontal" Spacing="10" ToolTip.Tip="{DynamicResource TabMonitor}">
+          <ctrl:FluentIcon Kind="Monitor" />
+          <TextBlock Classes="nav-label" VerticalAlignment="Center" Text="{DynamicResource TabMonitor}" />
+        </StackPanel>
+      </TabItem.Header>
+      <ScrollViewer>
+        <StackPanel Margin="28,20,28,24" Spacing="0" DataContext="{Binding Monitor}">
+          <TextBlock Classes="title" Text="{DynamicResource TabMonitor}" />
+          <TextBlock Classes="caption" Margin="0,4,0,0" Text="{DynamicResource MonitorDesc}" />
+
+          <TextBlock Classes="group-title" Text="{DynamicResource MonitorRuntime}" />
+          <Border Classes="settings-group">
+            <Border Classes="settings-row">
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel VerticalAlignment="Center" Spacing="2">
+                  <TextBlock Text="{Binding ModelName}" />
+                  <TextBlock Classes="caption" Text="{Binding ModelState}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="16">
+                  <TextBlock Classes="caption" VerticalAlignment="Center" Text="{Binding ModelPidText}" />
+                  <TextBlock Classes="caption" VerticalAlignment="Center" Text="{Binding UptimeText}" />
+                </StackPanel>
+              </Grid>
+            </Border>
+          </Border>
+
+          <!-- 所有监控卡片共用「标题 / 读数 / 图表」三段结构，保证多列之间高度一致 -->
+          <TextBlock Classes="group-title" Text="{DynamicResource MonitorSystem}" />
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+            <Border Classes="metric-card">
+              <Grid RowDefinitions="Auto,Auto,*">
+                <TextBlock Classes="metric-title" Text="{DynamicResource MonitorSystemCpu}" />
+                <TextBlock Grid.Row="1" Classes="metric-value" Text="{Binding SystemCpuText}" />
+                <ctrl:RealtimeChart Grid.Row="2"
+                                    Height="96"
+                                    Values="{Binding SystemCpu}"
+                                    Revision="{Binding ChartRevision}"
+                                    Unit="%"
+                                    EmptyText="{DynamicResource MonitorWaiting}" />
+              </Grid>
+            </Border>
+            <Border Grid.Column="1" Classes="metric-card">
+              <Grid RowDefinitions="Auto,Auto,*">
+                <TextBlock Classes="metric-title" Text="{DynamicResource MonitorSystemMemory}" />
+                <TextBlock Grid.Row="1" Classes="metric-value" Text="{Binding SystemMemoryText}" />
+                <ctrl:RealtimeChart Grid.Row="2"
+                                    Height="96"
+                                    Values="{Binding SystemMemory}"
+                                    Revision="{Binding ChartRevision}"
+                                    Unit="%"
+                                    EmptyText="{DynamicResource MonitorWaiting}" />
+              </Grid>
+            </Border>
+          </Grid>
+
+          <TextBlock Classes="group-title" Text="{DynamicResource MonitorGpu}" />
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+            <Border Classes="metric-card">
+              <Grid RowDefinitions="Auto,Auto,*">
+                <TextBlock Classes="metric-title" Text="{Binding GpuName}" />
+                <TextBlock Grid.Row="1" Classes="metric-value" Text="{Binding GpuText}" />
+                <ctrl:RealtimeChart Grid.Row="2"
+                                    Height="96"
+                                    Values="{Binding GpuUtil}"
+                                    Revision="{Binding ChartRevision}"
+                                    Unit="%"
+                                    EmptyText="{DynamicResource MonitorGpuUnavailable}" />
+              </Grid>
+            </Border>
+            <Border Grid.Column="1" Classes="metric-card">
+              <Grid RowDefinitions="Auto,Auto,*">
+                <TextBlock Classes="metric-title" Text="{DynamicResource MonitorInference}" />
+                <TextBlock Grid.Row="1" Classes="metric-value" Text="{Binding InferenceText}" />
+                <ctrl:RealtimeChart Grid.Row="2"
+                                    Height="96"
+                                    Values="{Binding TokenRate}"
+                                    Revision="{Binding ChartRevision}"
+                                    Unit="tok/s"
+                                    EmptyText="{DynamicResource MonitorInferenceUnavailable}" />
+              </Grid>
+            </Border>
+          </Grid>
+
+          <TextBlock Classes="group-title" Text="{DynamicResource MonitorPlatform}" />
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+            <Border Classes="metric-card">
+              <Grid RowDefinitions="Auto,Auto,*">
+                <TextBlock Classes="metric-title" Text="{DynamicResource MonitorPlatformCpu}" />
+                <TextBlock Grid.Row="1" Classes="metric-value" Text="{Binding PlatformCpuText}" />
+                <ctrl:RealtimeChart Grid.Row="2"
+                                    Height="96"
+                                    Values="{Binding PlatformCpu}"
+                                    Revision="{Binding ChartRevision}"
+                                    Unit="%"
+                                    EmptyText="{DynamicResource MonitorWaiting}" />
+              </Grid>
+            </Border>
+            <Border Grid.Column="1" Classes="metric-card">
+              <Grid RowDefinitions="Auto,Auto,*">
+                <TextBlock Classes="metric-title" Text="{DynamicResource MonitorPlatformMemory}" />
+                <TextBlock Grid.Row="1" Classes="metric-value" Text="{Binding PlatformMemoryText}" />
+                <ctrl:RealtimeChart Grid.Row="2"
+                                    Height="96"
+                                    Values="{Binding PlatformMemory}"
+                                    Revision="{Binding ChartRevision}"
+                                    Unit="MB"
+                                    EmptyText="{DynamicResource MonitorWaiting}" />
+              </Grid>
+            </Border>
+          </Grid>
+
+          <TextBlock Classes="group-title" Text="{DynamicResource MonitorModel}" />
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+            <Border Classes="metric-card">
+              <Grid RowDefinitions="Auto,Auto,*">
+                <TextBlock Classes="metric-title" Text="{DynamicResource MonitorModelCpu}" />
+                <TextBlock Grid.Row="1" Classes="metric-value" Text="{Binding ModelCpuText}" />
+                <ctrl:RealtimeChart Grid.Row="2"
+                                    Height="96"
+                                    Values="{Binding ModelCpu}"
+                                    Revision="{Binding ChartRevision}"
+                                    Unit="%"
+                                    EmptyText="{DynamicResource MonitorModelIdle}" />
+              </Grid>
+            </Border>
+            <Border Grid.Column="1" Classes="metric-card">
+              <Grid RowDefinitions="Auto,Auto,*">
+                <TextBlock Classes="metric-title" Text="{DynamicResource MonitorModelMemory}" />
+                <TextBlock Grid.Row="1" Classes="metric-value" Text="{Binding ModelMemoryText}" />
+                <ctrl:RealtimeChart Grid.Row="2"
+                                    Height="96"
+                                    Values="{Binding ModelMemory}"
+                                    Revision="{Binding ChartRevision}"
+                                    Unit="MB"
+                                    EmptyText="{DynamicResource MonitorModelIdle}" />
+              </Grid>
+            </Border>
+          </Grid>
+
+          <TextBlock Classes="group-title" Text="{DynamicResource Hardware}" />
+          <Border Classes="settings-group">
+            <StackPanel>
+              <Border Classes="settings-row">
+                <StackPanel Spacing="2">
+                  <TextBlock Text="{DynamicResource Hardware}" />
+                  <TextBlock Classes="caption" Text="{DynamicResource HardwareDesc}" />
+                </StackPanel>
+              </Border>
+              <ItemsControl ItemsSource="{Binding Hardware}">
+                <ItemsControl.ItemTemplate>
+                  <!-- 监控页只做只读清单，实际使用哪块硬件在常规页选择 -->
+                  <DataTemplate x:DataType="vm:HardwareItemViewModel">
+                    <Grid ColumnDefinitions="*,Auto,Auto" Margin="48,0,16,10">
+                      <TextBlock VerticalAlignment="Center" FontSize="13" Text="{Binding Name}" />
+                      <Border Grid.Column="1" Classes="badge" Margin="8,0">
+                        <TextBlock Text="{Binding TypeLabel}" />
+                      </Border>
+                      <Border Grid.Column="2"
+                              Classes="badge"
+                              IsVisible="{Binding Unavailable}">
+                        <TextBlock Text="{Binding UnavailableLabel}" />
+                      </Border>
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </ScrollViewer>
+    </TabItem>
+
+    <TabItem>
+      <TabItem.Header>
+        <StackPanel Orientation="Horizontal" Spacing="10" ToolTip.Tip="{DynamicResource TabCapabilities}">
+          <ctrl:FluentIcon Kind="Grid" />
+          <TextBlock Classes="nav-label" VerticalAlignment="Center" Text="{DynamicResource TabCapabilities}" />
+        </StackPanel>
+      </TabItem.Header>
+      <ScrollViewer>
+        <StackPanel Margin="28,20,28,24" Spacing="0" DataContext="{Binding Settings}">
+          <TextBlock Classes="title" Margin="0,0,0,16" Text="{DynamicResource TabCapabilities}" />
+
+          <!-- 能力开关控制是否允许使用功能；下方扩展列表只展示已经注册的具体实现。 -->
+          <Border Classes="settings-group">
+            <ItemsControl ItemsSource="{Binding Capabilities}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:CapabilityItemViewModel">
+                  <StackPanel>
+                    <Border Classes="settings-row">
+                      <Grid ColumnDefinitions="Auto,*,Auto">
+                        <ctrl:FluentIcon Kind="{Binding Icon}" Margin="0,0,16,0" VerticalAlignment="Center" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                          <TextBlock Text="{Binding Display}" />
+                          <TextBlock Classes="caption" Text="{Binding Description}" />
+                          <!-- 前置条件未满足时说明先要做什么，避免开关拨不动却没有原因 -->
+                          <TextBlock Classes="caption hint"
+                                     Text="{Binding Hint}"
+                                     IsVisible="{Binding HasHint}" />
+                        </StackPanel>
+                        <ToggleSwitch Grid.Column="2"
+                                      IsChecked="{Binding Enabled}"
+                                      IsHitTestVisible="{Binding CanToggle}"
+                                      Focusable="{Binding CanToggle}"
+                                      Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).ToggleCapabilityCommand}"
+                                      CommandParameter="{Binding}" />
+                      </Grid>
+                    </Border>
+                    <Border Classes="divider" />
+                  </StackPanel>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </Border>
+
+          <TextBlock Classes="subtitle" Margin="0,16,0,8" Text="{DynamicResource Extensions}" />
+
+          <!-- 扩展资源是能力的提供者，不在此处重复承担全局启停语义。 -->
+          <Border Classes="settings-group">
+            <StackPanel>
+              <Border Classes="settings-row">
+                <Grid ColumnDefinitions="Auto,*">
+                  <ctrl:FluentIcon Kind="Tools" Margin="0,0,16,0" VerticalAlignment="Center" />
+                  <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{DynamicResource Tools}" />
+                    <TextBlock Classes="caption" Text="{DynamicResource ToolsDesc}" />
+                  </StackPanel>
+                </Grid>
+              </Border>
+              <ItemsControl ItemsSource="{Binding Tools}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <TextBlock Classes="caption" Margin="48,0,16,10" Text="{Binding}" />
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <Border Classes="divider" />
+              <Border Classes="settings-row">
+                <Grid ColumnDefinitions="Auto,*">
+                  <ctrl:FluentIcon Kind="Plug" Margin="0,0,16,0" VerticalAlignment="Center" />
+                  <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{DynamicResource Mcp}" />
+                    <TextBlock Classes="caption" Text="{DynamicResource McpDesc}" />
+                  </StackPanel>
+                </Grid>
+              </Border>
+              <ItemsControl ItemsSource="{Binding McpServers}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <TextBlock Classes="caption" Margin="48,0,16,10" Text="{Binding}" />
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <Border Classes="divider" />
+              <Border Classes="settings-row">
+                <Grid ColumnDefinitions="Auto,*">
+                  <ctrl:FluentIcon Kind="Lightbulb" Margin="0,0,16,0" VerticalAlignment="Center" />
+                  <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{DynamicResource Skills}" />
+                    <TextBlock Classes="caption" Text="{DynamicResource SkillsDesc}" />
+                  </StackPanel>
+                </Grid>
+              </Border>
+              <ItemsControl ItemsSource="{Binding Skills}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:SkillItemViewModel">
+                    <TextBlock Classes="caption" Margin="48,0,16,10" Text="{Binding Name}" />
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </ScrollViewer>
+    </TabItem>
+
+    <TabItem>
+      <TabItem.Header>
+        <StackPanel Orientation="Horizontal" Spacing="10" ToolTip.Tip="{DynamicResource TabData}">
+          <ctrl:FluentIcon Kind="Folder" />
+          <TextBlock Classes="nav-label" VerticalAlignment="Center" Text="{DynamicResource TabData}" />
+        </StackPanel>
+      </TabItem.Header>
+      <ScrollViewer>
+        <StackPanel Margin="28,20,28,24" Spacing="0" DataContext="{Binding Settings}">
+          <TextBlock Classes="title" Margin="0,0,0,16" Text="{DynamicResource TabData}" />
+
+          <Border Classes="settings-group">
+            <StackPanel>
+              <Border Classes="settings-row">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <ctrl:FluentIcon Kind="Document" Margin="0,0,16,0" VerticalAlignment="Center" />
+                  <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{DynamicResource Rag}" />
+                    <TextBlock Classes="caption" Text="{DynamicResource RagDesc}" />
+                  </StackPanel>
+                  <Button Grid.Column="2"
+                          VerticalAlignment="Center"
+                          Content="{DynamicResource ImportDocument}"
+                          Command="{Binding ImportDocumentCommand}" />
+                </Grid>
+              </Border>
+              <ItemsControl ItemsSource="{Binding Documents}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:DocumentItemViewModel">
+                    <Grid ColumnDefinitions="*,Auto" Margin="48,0,16,10">
+                      <TextBlock Classes="caption" VerticalAlignment="Center" Text="{Binding Title}" />
+                      <Button Grid.Column="1"
+                              VerticalAlignment="Center"
+                              Content="{DynamicResource Delete}"
+                              Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).DeleteDocumentCommand}"
+                              CommandParameter="{Binding}" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+
+          <Border Classes="settings-group" Margin="0,16,0,0">
+            <StackPanel>
+              <Border Classes="settings-row">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <ctrl:FluentIcon Kind="Lightbulb" Margin="0,0,16,0" VerticalAlignment="Center" />
+                  <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{DynamicResource Skills}" />
+                    <TextBlock Classes="caption" Text="{DynamicResource SkillsDesc}" />
+                  </StackPanel>
+                  <Button Grid.Column="2"
+                          VerticalAlignment="Center"
+                          Content="{DynamicResource ImportSkill}"
+                          Command="{Binding ImportSkillCommand}" />
+                </Grid>
+              </Border>
+              <ItemsControl ItemsSource="{Binding Skills}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:SkillItemViewModel">
+                    <Grid ColumnDefinitions="*,Auto,Auto" Margin="48,0,16,10">
+                      <TextBlock Classes="caption" VerticalAlignment="Center" Text="{Binding Name}" />
+                      <Button Grid.Column="1"
+                              Margin="0,0,8,0"
+                              VerticalAlignment="Center"
+                              Content="{DynamicResource Enable}"
+                              IsVisible="{Binding !Enabled}"
+                              Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).ToggleSkillCommand}"
+                              CommandParameter="{Binding}" />
+                      <Button Grid.Column="1"
+                              Margin="0,0,8,0"
+                              VerticalAlignment="Center"
+                              Content="{DynamicResource Disable}"
+                              IsVisible="{Binding Enabled}"
+                              Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).ToggleSkillCommand}"
+                              CommandParameter="{Binding}" />
+                      <Button Grid.Column="2"
+                              VerticalAlignment="Center"
+                              Content="{DynamicResource Delete}"
+                              Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).DeleteSkillCommand}"
+                              CommandParameter="{Binding}" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </ScrollViewer>
+    </TabItem>
+
+    <TabItem>
+      <TabItem.Header>
+        <StackPanel Orientation="Horizontal" Spacing="10" ToolTip.Tip="{DynamicResource TabPlugins}">
+          <ctrl:FluentIcon Kind="Puzzle" />
+          <TextBlock Classes="nav-label" VerticalAlignment="Center" Text="{DynamicResource TabPlugins}" />
+        </StackPanel>
+      </TabItem.Header>
+      <ScrollViewer>
+        <StackPanel Margin="28,20,28,24" Spacing="0" DataContext="{Binding Plugins}">
+          <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,16">
+            <TextBlock Classes="title" Text="{DynamicResource TabPlugins}" />
+            <Button Grid.Column="1"
+                    Margin="0,0,8,0"
+                    VerticalAlignment="Center"
+                    Content="{DynamicResource Refresh}"
+                    Command="{Binding RefreshCommand}" />
+            <Button Grid.Column="2"
+                    VerticalAlignment="Center"
+                    Content="{DynamicResource ImportPlugin}"
+                    Command="{Binding ImportCommand}" />
+          </Grid>
+
+          <Border Classes="settings-group">
+            <StackPanel>
+              <ItemsControl ItemsSource="{Binding Plugins}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:PluginItemViewModel">
+                    <StackPanel>
+                      <Border Classes="settings-row">
+                        <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                          <ctrl:FluentIcon Kind="Puzzle" Margin="0,0,16,0" VerticalAlignment="Center" />
+                          <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                            <TextBlock Text="{Binding Name}" />
+                            <TextBlock Classes="caption" Text="{Binding Status}" />
+                          </StackPanel>
+                          <Button Grid.Column="2"
+                                  Margin="0,0,8,0"
+                                  VerticalAlignment="Center"
+                                  Content="{DynamicResource Enable}"
+                                  IsVisible="{Binding !Enabled}"
+                                  Command="{Binding $parent[ItemsControl].((vm:PluginManagerViewModel)DataContext).EnableCommand}"
+                                  CommandParameter="{Binding}" />
+                          <Button Grid.Column="2"
+                                  Margin="0,0,8,0"
+                                  VerticalAlignment="Center"
+                                  Content="{DynamicResource Disable}"
+                                  IsVisible="{Binding Enabled}"
+                                  Command="{Binding $parent[ItemsControl].((vm:PluginManagerViewModel)DataContext).EnableCommand}"
+                                  CommandParameter="{Binding}" />
+                          <Button Grid.Column="3"
+                                  VerticalAlignment="Center"
+                                  Content="{DynamicResource Delete}"
+                                  Command="{Binding $parent[ItemsControl].((vm:PluginManagerViewModel)DataContext).DeleteCommand}"
+                                  CommandParameter="{Binding}" />
+                        </Grid>
+                      </Border>
+                      <Border Classes="divider" />
+                    </StackPanel>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <TextBlock Classes="caption"
+                         Margin="16"
+                         IsVisible="{Binding !HasPlugins}"
+                         Text="{DynamicResource EmptyList}" />
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </ScrollViewer>
+    </TabItem>
+  </TabControl>
+</views:FluentWindow>

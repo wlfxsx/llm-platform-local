@@ -1,0 +1,194 @@
+<views:FluentWindow xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:vm="using:LlmPlatform.Desktop.ViewModels"
+                    xmlns:views="using:LlmPlatform.Desktop.Views"
+                    xmlns:ctrl="using:LlmPlatform.Desktop.Controls"
+                    x:Class="LlmPlatform.Desktop.Views.ChatWindow"
+                    x:Name="ChatRoot"
+                    x:DataType="vm:ChatViewModel"
+                    Title="{DynamicResource TrayChat}"
+                    Icon="/Assets/tray.ico"
+                    Width="900"
+                    Height="640"
+                    MinWidth="720"
+                    MinHeight="520"
+                    WindowStartupLocation="CenterScreen">
+  <Grid ColumnDefinitions="Auto,*">
+    <!-- 侧栏宽度由折叠状态驱动，宽度过渡让收起/展开不突兀 -->
+    <Border Classes="chat-sidebar"
+            Classes.collapsed="{Binding SidebarCollapsed}"
+            Width="{Binding SidebarWidth}">
+      <Border.Transitions>
+        <Transitions>
+          <DoubleTransition Property="Width" Duration="0:0:0.18" Easing="CubicEaseOut" />
+        </Transitions>
+      </Border.Transitions>
+      <DockPanel>
+        <!-- 与右侧标题栏同高，保证两侧分隔线在同一水平线上 -->
+        <Grid Name="SidebarHeader"
+              DockPanel.Dock="Top"
+              Height="48"
+              ColumnDefinitions="Auto,*,Auto"
+              Margin="8,0,8,0">
+          <Button Classes="icon"
+                  Height="32"
+                  VerticalAlignment="Center"
+                  ToolTip.Tip="{DynamicResource ToggleSidebar}"
+                  Command="{Binding ToggleSidebarCommand}">
+            <ctrl:FluentIcon Kind="Menu" />
+          </Button>
+          <TextBlock Grid.Column="1"
+                     Classes="subtitle"
+                     Margin="8,0,0,0"
+                     VerticalAlignment="Center"
+                     IsVisible="{Binding !SidebarCollapsed}"
+                     Text="{DynamicResource Sessions}" />
+          <Button Grid.Column="2"
+                  Classes="icon"
+                  Height="32"
+                  VerticalAlignment="Center"
+                  IsVisible="{Binding !SidebarCollapsed}"
+                  ToolTip.Tip="{DynamicResource NewSession}"
+                  Command="{Binding NewSessionCommand}">
+            <ctrl:FluentIcon Kind="Add" />
+          </Button>
+        </Grid>
+
+        <Border DockPanel.Dock="Top" Classes="divider" Margin="0" />
+
+        <!-- 收起态只留图标列，新建按钮改到列表位置，避免顶栏挤成两个图标 -->
+        <Button DockPanel.Dock="Top"
+                Classes="icon"
+                Width="32"
+                Height="32"
+                Margin="0,8,0,0"
+                HorizontalAlignment="Center"
+                IsVisible="{Binding SidebarCollapsed}"
+                ToolTip.Tip="{DynamicResource NewSession}"
+                Command="{Binding NewSessionCommand}">
+          <ctrl:FluentIcon Kind="Add" />
+        </Button>
+
+        <ScrollViewer IsVisible="{Binding !SidebarCollapsed}"
+                      HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Auto">
+          <ItemsControl ItemsSource="{Binding Sessions}" Margin="8,8,8,12">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:SessionItemViewModel">
+                <!--
+                  行宽固定（侧栏 240 减去左右内边距与滚动条），删除按钮右对齐叠放在会话项上方。
+                  用 * 列时长标题的测量宽度会把按钮列整体右推，导致删除按钮被裁掉。
+                -->
+                <Panel Width="216" Margin="0,2" ClipToBounds="True">
+                  <Button Classes="session-item"
+                          Classes.selected="{Binding IsSelected}"
+                          HorizontalAlignment="Stretch"
+                          HorizontalContentAlignment="Left"
+                          Padding="12,8,42,8"
+                          Command="{Binding #ChatRoot.((vm:ChatViewModel)DataContext).SelectSessionCommand}"
+                          CommandParameter="{Binding}">
+                    <TextBlock Text="{Binding Title}"
+                               TextWrapping="NoWrap"
+                               TextTrimming="CharacterEllipsis" />
+                  </Button>
+                  <Button Classes="icon"
+                          Width="28"
+                          Height="28"
+                          HorizontalAlignment="Right"
+                          VerticalAlignment="Center"
+                          Margin="0,0,4,0"
+                          ToolTip.Tip="{DynamicResource DeleteSession}"
+                          Command="{Binding #ChatRoot.((vm:ChatViewModel)DataContext).DeleteSessionCommand}"
+                          CommandParameter="{Binding}">
+                    <ctrl:FluentIcon Kind="Delete" Width="14" Height="14" />
+                  </Button>
+                </Panel>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </DockPanel>
+    </Border>
+
+    <DockPanel Grid.Column="1">
+      <Grid DockPanel.Dock="Top" Height="48" Margin="16,0,16,0">
+        <TextBlock Classes="caption" VerticalAlignment="Center" Text="{Binding StatusText}" />
+      </Grid>
+
+      <Border DockPanel.Dock="Top" Classes="divider" Margin="0" />
+      <Border DockPanel.Dock="Bottom" Classes="divider" Margin="0" />
+
+      <!-- 输入框与发送按钮同高：单行时两者高度一致，多行时输入框向上生长。 -->
+      <Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,Auto" Margin="16,12,16,16">
+        <TextBox Name="InputBox"
+                 Watermark="{DynamicResource InputPlaceholder}"
+                 Text="{Binding Input}"
+                 AcceptsReturn="True"
+                 TextWrapping="Wrap"
+                 MinHeight="40"
+                 MaxHeight="140"
+                 Padding="12,9" />
+        <Button Grid.Column="1"
+                Classes="accent"
+                Margin="8,0,0,0"
+                MinHeight="40"
+                MinWidth="88"
+                VerticalAlignment="Bottom"
+                Content="{DynamicResource Send}"
+                Command="{Binding SendCommand}" />
+      </Grid>
+
+      <!--
+        禁用水平滚动，消息才会按可用宽度换行。
+        内边距写在内容的 Margin 上：ScrollViewer.Padding 不计入可滚动范围，
+        滚到底后最后一行会被裁掉。
+      -->
+      <ScrollViewer Name="MessageScroll"
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Auto">
+        <ItemsControl ItemsSource="{Binding Messages}" Margin="20,12,20,20">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:ChatLineViewModel">
+              <Grid Classes="message-row"
+                    Classes.user="{Binding IsUser}"
+                    Margin="0,8,0,0"
+                    RowDefinitions="Auto,26">
+                <Border Classes="chat-bubble user"
+                        HorizontalAlignment="Right"
+                        Margin="64,0,0,0"
+                        IsVisible="{Binding IsUser}">
+                  <SelectableTextBlock Text="{Binding Content}" TextWrapping="Wrap" />
+                </Border>
+                <!-- 助手内容按可用宽度铺满并留出右侧留白，避免长行贴到窗口边缘。 -->
+                <Border Classes="chat-bubble assistant"
+                        HorizontalAlignment="Stretch"
+                        Margin="0,0,24,0"
+                        IsVisible="{Binding !IsUser}">
+                  <ctrl:MarkdownBlock Markdown="{Binding Content}" />
+                </Border>
+
+                <!-- 固定高度占位，操作按钮悬停才显示，避免鼠标经过时消息位置跳动。 -->
+                <StackPanel Grid.Row="1"
+                            Classes="message-actions"
+                            Orientation="Horizontal"
+                            Spacing="4"
+                            VerticalAlignment="Center"
+                            IsVisible="{Binding CanRetract}">
+                  <Button Classes="compact message-action"
+                          Content="{DynamicResource EditMessage}"
+                          IsVisible="{Binding CanModify}"
+                          Command="{Binding #ChatRoot.((vm:ChatViewModel)DataContext).EditCommand}"
+                          CommandParameter="{Binding}" />
+                  <Button Classes="compact message-action"
+                          Content="{DynamicResource RetractMessage}"
+                          Command="{Binding #ChatRoot.((vm:ChatViewModel)DataContext).RetractCommand}"
+                          CommandParameter="{Binding}" />
+                </StackPanel>
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </DockPanel>
+  </Grid>
+</views:FluentWindow>
