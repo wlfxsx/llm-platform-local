@@ -2,39 +2,52 @@ package io.llmplatform.infra.rag;
 
 import io.llmplatform.common.UserDataPaths;
 import io.llmplatform.common.error.PlatformException;
+import io.llmplatform.infra.embedding.EmbeddingProvider;
 import io.llmplatform.pojo.entity.RagDocument;
 import io.llmplatform.pojo.vo.RagChunk;
-import io.llmplatform.pojo.vo.VectorHit;
+import io.llmplatform.repository.GraphRagRepository;
 import io.llmplatform.repository.RagRepository;
 import io.llmplatform.repository.VectorStore;
+import io.llmplatform.repository.entity.RagChunkEntity;
 import io.llmplatform.service.EmbeddingService;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-/** 本地文档切分、嵌入和检索。 */
+/** 本地文档抽取、切分、嵌入和混合检索。 */
 @Component
 public class LocalRagProvider implements RagProvider {
 
     private final RagRepository ragRepository;
+    private final GraphRagRepository graphRagRepository;
     private final UserDataPaths paths;
     private final EmbeddingService embeddingService;
     private final VectorStore vectorStore;
+    private final DocumentTextExtractor extractor;
+    private final HybridRagRetriever hybridRagRetriever;
+    private final GraphRagIndexer graphRagIndexer;
 
     public LocalRagProvider(
             RagRepository ragRepository,
+            GraphRagRepository graphRagRepository,
             UserDataPaths paths,
             EmbeddingService embeddingService,
-            VectorStore vectorStore) {
+            VectorStore vectorStore,
+            DocumentTextExtractor extractor,
+            HybridRagRetriever hybridRagRetriever,
+            GraphRagIndexer graphRagIndexer) {
         this.ragRepository = ragRepository;
+        this.graphRagRepository = graphRagRepository;
         this.paths = paths;
         this.embeddingService = embeddingService;
         this.vectorStore = vectorStore;
+        this.extractor = extractor;
+        this.hybridRagRetriever = hybridRagRetriever;
+        this.graphRagIndexer = graphRagIndexer;
     }
 
     @Override
@@ -46,28 +59,70 @@ public class LocalRagProvider implements RagProvider {
         return ragRepository.findAllDocuments();
     }
 
-    /** 文档元数据与切片写入处于数据库事务内；文件复制和向量存储不参与数据库回滚， 因此失败后允许保留可清理的本机文件，而不能提交部分数据库元数据。 */
+    /** 文档元数据与切片写入处于数据库事务内；文件复制和向量存储不参与数据库回滚。 */
     @Transactional
     public RagDocument importDocument(Path source) {
+        return importDocument(source, "");
+    }
+
+    @Transactional
+    public RagDocument importDocument(Path source, String sessionId) {
         paths.ensureDirectories();
-        if (!Files.isRegularFile(source)) {
-            throw new PlatformException("INVALID_REQUEST", "error.invalidRequest");
-        }
+        ExtractedDocument extracted = extractor.extract(source);
+        EmbeddingProvider embedding = embeddingService.current();
+        requireCompatibleDimension(embedding);
         try {
-            String text = Files.readString(source);
             String id = UUID.randomUUID().toString();
             Path stored = paths.rag().resolve(id + "-" + source.getFileName());
             Files.copy(source, stored);
-            List<String> chunks = chunk(text);
-            RagDocument document =
-                    new RagDocument(
-                            id, source.getFileName().toString(), stored.toString(), chunks.size());
-            ragRepository.insertDocument(document, System.currentTimeMillis());
-            for (String chunk : chunks) {
-                String chunkId = UUID.randomUUID().toString();
-                ragRepository.insertChunk(chunkId, id, chunk);
-                vectorStore.upsert("rag", chunkId, embeddingService.current().embed(chunk), chunk);
+            List<ChunkDraft> drafts =
+                    DocumentChunker.chunk(extracted.text(), extracted.kind(), extracted.title());
+            try {
+                drafts = SemanticChunkMerger.merge(drafts, embedding);
+            } catch (RuntimeException ignored) {
+                // 嵌入未就绪时保留结构切分结果。
             }
+            List<DocumentChunker.ParentGroup> groups = DocumentChunker.groupParents(drafts);
+            int childCount = drafts.size();
+            RagDocument document =
+                    new RagDocument(id, extracted.title(), stored.toString(), childCount);
+            ragRepository.insertDocument(document, System.currentTimeMillis());
+            int ordinal = 0;
+            int parentOrdinal = 0;
+            for (DocumentChunker.ParentGroup group : groups) {
+                String parentId = null;
+                if (group.children().size() > 1) {
+                    parentId = UUID.randomUUID().toString();
+                    RagChunkEntity parent = new RagChunkEntity();
+                    parent.setId(parentId);
+                    parent.setDocumentId(id);
+                    parent.setContent(group.combinedBody());
+                    parent.setOrdinal(parentOrdinal++);
+                    parent.setHeadingPath(group.headingPath());
+                    parent.setCharStart(group.children().getFirst().charStart());
+                    parent.setCharEnd(group.children().getLast().charEnd());
+                    parent.setRole("parent");
+                    ragRepository.insertChunk(parent);
+                }
+                for (ChunkDraft draft : group.children()) {
+                    String chunkId = UUID.randomUUID().toString();
+                    String content = draft.prefixed(extracted.title());
+                    RagChunkEntity child = new RagChunkEntity();
+                    child.setId(chunkId);
+                    child.setDocumentId(id);
+                    child.setContent(content);
+                    child.setOrdinal(ordinal++);
+                    child.setHeadingPath(draft.headingPath());
+                    child.setParentId(parentId);
+                    child.setCharStart(draft.charStart());
+                    child.setCharEnd(draft.charEnd());
+                    child.setRole("child");
+                    ragRepository.insertChunk(child);
+                    float[] vector = embedding.embedDocument(content);
+                    vectorStore.upsert("rag", chunkId, vector, content);
+                }
+            }
+            graphRagIndexer.schedule(id, sessionId);
             return document;
         } catch (IOException ex) {
             throw new PlatformException("FILE_COPY_FAILED", "error.fileCopyFailed");
@@ -76,30 +131,29 @@ public class LocalRagProvider implements RagProvider {
 
     @Transactional
     public void deleteDocument(String id) {
+        graphRagRepository.deleteByDocument(id);
         ragRepository.deleteDocument(id);
     }
 
     @Override
     public List<RagChunk> retrieve(String query, int topK) {
-        float[] embedding = embeddingService.current().embed(query);
-        List<VectorHit> hits = vectorStore.search("rag", embedding, topK);
-        List<RagChunk> chunks = new ArrayList<>();
-        for (VectorHit hit : hits) {
-            chunks.add(new RagChunk(hit.id(), "", hit.payload(), hit.score()));
-        }
-        return chunks;
+        return retrieve(query, topK, "");
     }
 
-    private List<String> chunk(String text) {
-        // 当前固定字符窗口只是离线最小闭环，后续可替换为分词切分而不改变 Repository 契约。
-        List<String> chunks = new ArrayList<>();
-        int size = 600;
-        for (int i = 0; i < text.length(); i += size) {
-            chunks.add(text.substring(i, Math.min(text.length(), i + size)));
+    @Override
+    public List<RagChunk> retrieve(String query, int topK, String sessionId) {
+        return hybridRagRetriever.retrieve(query, sessionId, topK);
+    }
+
+    private void requireCompatibleDimension(EmbeddingProvider embedding) {
+        int storedBytes = ragRepository.storedEmbeddingByteLength();
+        if (storedBytes <= 0) {
+            return;
         }
-        if (chunks.isEmpty()) {
-            chunks.add(text);
+        float[] probe = embedding.embedDocument("dimension-check");
+        if (probe.length * 4 != storedBytes) {
+            throw new PlatformException(
+                    "RAG_DIMENSION_MISMATCH", "error.ragEmbeddingDimensionMismatch");
         }
-        return chunks;
     }
 }

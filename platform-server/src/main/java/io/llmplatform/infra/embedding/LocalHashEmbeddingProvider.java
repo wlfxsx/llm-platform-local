@@ -9,7 +9,7 @@ public class LocalHashEmbeddingProvider implements EmbeddingProvider {
 
     @Override
     public String id() {
-        return "local";
+        return "local-hash";
     }
 
     @Override

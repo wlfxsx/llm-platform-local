@@ -47,6 +47,8 @@ public class SettingsService {
                         settings.embeddingModel(),
                         settings.embeddingBaseUrl(),
                         settings.embeddingDimension(),
+                        settings.embeddingLlamafilePort(),
+                        settings.rerankLlamafilePort(),
                         settings.networkEnabled(),
                         provider,
                         settings.currentRemoteModelId() == null

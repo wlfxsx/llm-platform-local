@@ -50,6 +50,13 @@ following third-party software.
 - Project: https://github.com/java-native-access/jna
 - License: LGPL 2.1 or Apache License 2.0
 
+## Apache Tika 3.2.3
+
+- Project: https://tika.apache.org/
+- License: Apache License 2.0
+- Artifacts: `tika-core`, `tika-parsers-standard-package`
+- Used for extracting text from PDF/Office and related formats when a text layer is present
+
 ## Avalonia 11
 
 - Project: https://avaloniaui.net/

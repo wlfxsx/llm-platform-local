@@ -11,10 +11,14 @@ public final class CapabilityIds {
     public static final String SKILLS = "skills";
     public static final String NETWORK = "network";
     public static final String EMBEDDING = "embedding";
+    public static final String GRAPH_RAG = "graph.rag";
+    public static final String HYDE = "hyde";
 
     private CapabilityIds() {}
 
     public static String[] all() {
-        return new String[] {CHAT, CONTEXT, RAG, TOOLS, MCP, SKILLS, NETWORK, EMBEDDING};
+        return new String[] {
+            CHAT, CONTEXT, RAG, TOOLS, MCP, SKILLS, NETWORK, EMBEDDING, GRAPH_RAG, HYDE
+        };
     }
 }

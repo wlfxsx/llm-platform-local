@@ -10,6 +10,8 @@ Chinese documentation: [README.md](../README.md)
 - Parameter profiles: save multiple named profiles and select one when starting a model
 - Remote models: manage multiple OpenAI-compatible endpoints and switch between local and remote models
 - Chat management: session history, streaming output, Markdown, message editing, and retraction
+- Local knowledge base: import text-bearing documents, structure-aware chunking, hybrid vector + FTS retrieval, and local reranking
+- Remote retrieval enhancements: GraphRAG and HyDE are optional and require remote chat mode
 - Resource monitoring: system, Java control plane, llamafile, GPU, and inference-throughput metrics
 - Capability layer: Tool, MCP, Skill, RAG, Memory, and plugin management
 - Localized UI: Chinese and English resources, system theme, and system accent color
@@ -20,9 +22,11 @@ Chinese documentation: [README.md](../README.md)
 Avalonia desktop application
   └─ HTTP / SSE / WebSocket
       └─ Spring Boot local control plane (127.0.0.1:17890)
-          ├─ llamafile local inference (127.0.0.1:17891 by default)
+          ├─ llamafile chat inference (127.0.0.1:17891 by default)
+          ├─ llamafile embeddings (127.0.0.1:17892 by default)
+          ├─ llamafile reranking (127.0.0.1:17893 by default)
           ├─ OpenAI-compatible remote models
-          ├─ local SQLite data
+          ├─ local SQLite data and knowledge-base indexes
           └─ Tool / MCP / Skill / RAG / Memory
 ```
 
@@ -32,7 +36,8 @@ The desktop application owns the UI, system tray, and process lifecycle. The Jav
 
 - The control plane and local inference service listen only on loopback addresses.
 - Remote API keys are stored in the operating system credential store; SQLite stores only credential references.
-- The global network switch can keep inference and retrieval local when local models are used.
+- The global network switch can keep inference and local knowledge-base retrieval on-device.
+- GraphRAG and HyDE depend on a remote chat model and send related text to the configured remote service when enabled.
 - Exiting the application stops the Java control plane and llamafile processes started by the application.
 - Runtime data is stored in the platform user-data directory (`~/.llm-platform` by default), outside the repository.
 
@@ -57,6 +62,17 @@ The repository does not ship the llamafile binary. Download it from [Mozilla lla
 
 The control plane resolves the binary from settings, config, the working directory, `runtime/`, paths next to the JAR, and `.me/files/` when walking up from the working directory (development machines only).
 
+### Where to put knowledge-base models
+
+Local RAG defaults to BGE-M3 embeddings and bge-reranker-v2-m3 reranking (Q4_K_M GGUF, roughly 438MB each). Weights are not committed; when found they are copied into the user-data directory:
+
+| Role | File name | User-data directory | Assembled layout | Local development fallback (not committed) |
+|------|-----------|---------------------|------------------|--------------------------------------------|
+| Embedding | `bge-m3-q4_k_m.gguf` | `~/.llm-platform/models/embedding/` | `runtime/models/embedding/` | `.me/model/` |
+| Rerank | `bge-reranker-v2-m3-q4_k_m.gguf` | `~/.llm-platform/models/rerank/` | `runtime/models/rerank/` | `.me/model/` |
+
+Document import requires the embedding model. Without the reranker, hybrid vector + FTS retrieval still works. Supported extracts include text-bearing TXT/Markdown/HTML/PDF/Office files; scanned-image OCR is not supported.
+
 Build the Java control plane:
 
 ```shell
@@ -76,7 +92,8 @@ Build outputs are written to `.me/build/` (development machine only; not committ
 
 - Local mode: make sure llamafile is placed as above, import a GGUF file, select the execution device and a parameter profile, then explicitly start the model.
 - Remote mode: add an OpenAI-compatible API URL, model name, and API key, then enable the global network switch.
-- The application does not load a local model automatically at startup.
+- Knowledge base: import documents in Settings. Local retrieval works by default. GraphRAG / HyDE require remote chat mode and their capability switches.
+- The application does not load a local chat model automatically at startup; embedding and rerank processes start on demand for import or retrieval.
 
 ## Packaging
 

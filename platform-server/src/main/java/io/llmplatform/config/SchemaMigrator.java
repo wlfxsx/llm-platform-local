@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 public final class SchemaMigrator {
 
     private static final Logger log = LoggerFactory.getLogger(SchemaMigrator.class);
-    private static final int TARGET_VERSION = 7;
+    private static final int TARGET_VERSION = 9;
 
     private SchemaMigrator() {}
 
@@ -74,6 +74,27 @@ public final class SchemaMigrator {
                 executeScript(statement, "db/migration/V7__remote_models.sql");
                 setUserVersion(statement, 7);
                 version = 7;
+            }
+            if (version < 8) {
+                addColumnIfMissing(
+                        statement, "rag_chunks", "ordinal", "INTEGER NOT NULL DEFAULT 0");
+                addColumnIfMissing(
+                        statement, "rag_chunks", "heading_path", "TEXT NOT NULL DEFAULT ''");
+                addColumnIfMissing(statement, "rag_chunks", "parent_id", "TEXT");
+                addColumnIfMissing(
+                        statement, "rag_chunks", "char_start", "INTEGER NOT NULL DEFAULT 0");
+                addColumnIfMissing(
+                        statement, "rag_chunks", "char_end", "INTEGER NOT NULL DEFAULT 0");
+                addColumnIfMissing(
+                        statement, "rag_chunks", "role", "TEXT NOT NULL DEFAULT 'child'");
+                executeScript(statement, "db/migration/V8__rag_smart_index.sql");
+                setUserVersion(statement, 8);
+                version = 8;
+            }
+            if (version < 9) {
+                executeScript(statement, "db/migration/V9__rag_graph.sql");
+                setUserVersion(statement, 9);
+                version = 9;
             }
             if (version != TARGET_VERSION) {
                 log.warn("数据库版本 {} 高于当前代码目标 {}", version, TARGET_VERSION);

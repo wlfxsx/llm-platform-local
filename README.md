@@ -10,6 +10,8 @@
 - 参数预设：保存多套命名参数，并在启动模型时选择预设
 - 远程模型：管理多套 OpenAI 兼容服务配置，支持在本地与远程模型之间切换
 - 对话管理：会话列表、流式输出、Markdown、消息修改和撤回
+- 本地知识库：导入有文字层的文档，结构切分后做向量 + FTS 混合检索，并用本地重排模型精排
+- 远程检索增强：GraphRAG、HyDE 仅在远程大模型模式下可选开启
 - 资源监控：展示系统、Java 控制面、llamafile、GPU 和推理吞吐指标
 - 能力扩展：Tool、MCP、Skill、RAG、Memory 和插件管理
 - 本地化界面：中文和英文资源、系统主题与系统强调色
@@ -20,9 +22,11 @@
 Avalonia 桌面应用
   └─ HTTP / SSE / WebSocket
       └─ Spring Boot 本机控制面（127.0.0.1:17890）
-          ├─ llamafile 本地推理（默认 127.0.0.1:17891）
+          ├─ llamafile 对话推理（默认 127.0.0.1:17891）
+          ├─ llamafile 向量化（默认 127.0.0.1:17892）
+          ├─ llamafile 重排（默认 127.0.0.1:17893）
           ├─ OpenAI 兼容远程模型
-          ├─ SQLite 本地数据
+          ├─ SQLite 本地数据与知识库索引
           └─ Tool / MCP / Skill / RAG / Memory
 ```
 
@@ -32,7 +36,8 @@ Avalonia 桌面应用
 
 - 控制面和本地推理服务仅监听回环地址，不开放外部入站端口。
 - 远程 API Key 保存到操作系统凭据库；SQLite 只保存凭据引用。
-- 使用本地模型时可关闭联网总开关，使推理和检索保持在本机。
+- 使用本地模型时可关闭联网总开关，使推理和本地知识库检索保持在本机。
+- GraphRAG、HyDE 依赖远程大模型，开启后会把相关文本发送到已配置的远程服务。
 - 退出应用时会停止由应用启动的 Java 控制面和 llamafile 进程。
 - 运行数据默认保存在各平台用户数据目录（当前默认值为 `~/.llm-platform`），不写入仓库。
 
@@ -57,6 +62,17 @@ Avalonia 桌面应用
 
 控制面按设置项、配置项、当前工作目录、`runtime/`、JAR 旁路径，以及向上查找的 `.me/files/`（仅开发机）依次解析。
 
+### 知识库模型放置位置
+
+本地知识库默认使用 BGE-M3 向量模型和 bge-reranker-v2-m3 重排模型（均为 Q4_K_M GGUF，约各 438MB）。权重不入库，首次可用时会复制到用户数据目录：
+
+| 用途 | 文件名 | 用户数据目录 | 组装目录 | 开发机备选（不入库） |
+|------|--------|--------------|----------|----------------------|
+| 向量化 | `bge-m3-q4_k_m.gguf` | `~/.llm-platform/models/embedding/` | `runtime/models/embedding/` | `.me/model/` |
+| 重排 | `bge-reranker-v2-m3-q4_k_m.gguf` | `~/.llm-platform/models/rerank/` | `runtime/models/rerank/` | `.me/model/` |
+
+缺少向量模型时无法导入知识库文档；缺少重排模型时仍可使用向量 + FTS 混合召回。当前支持抽取有文字层的文本、Markdown、HTML、PDF、Office 等格式，不支持扫描件 OCR。
+
 先构建 Java 控制面：
 
 ```shell
@@ -76,7 +92,8 @@ dotnet run --project desktop/LlmPlatform.Desktop/LlmPlatform.Desktop.csproj
 
 - 本地模式：确认 llamafile 已按上文放置，在设置中导入 GGUF 文件、选择运行硬件和参数预设，然后显式启动模型。
 - 远程模式：添加 OpenAI 兼容 API 地址、模型名和 API Key，并开启联网总开关。
-- 应用启动不会自动加载本地模型。
+- 知识库：在设置中导入文档；本地检索默认可用。GraphRAG / HyDE 需切换到远程大模型并打开对应能力开关。
+- 应用启动不会自动加载本地对话模型；向量化与重排进程按导入或检索需要启动。
 
 ## 打包
 

@@ -20,4 +20,17 @@ public class RagChunkEntity {
     private String documentId;
 
     private String content;
+
+    private Integer ordinal;
+
+    private String headingPath;
+
+    private String parentId;
+
+    private Integer charStart;
+
+    private Integer charEnd;
+
+    /** child 参与检索；parent 仅用于注入扩展。 */
+    private String role;
 }

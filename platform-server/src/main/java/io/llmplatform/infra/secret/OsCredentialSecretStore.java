@@ -20,7 +20,8 @@ import org.springframework.stereotype.Component;
 /**
  * 把密钥写入操作系统凭据库。
  *
- * <p>Windows 用 Credential Manager；macOS 用 Keychain（security）；Linux 用 Secret Service（secret-tool）。 任一平台不可用时抛出明确错误，绝不回退到明文落库。
+ * <p>Windows 用 Credential Manager；macOS 用 Keychain（security）；Linux 用 Secret Service（secret-tool）。
+ * 任一平台不可用时抛出明确错误，绝不回退到明文落库。
  */
 @Component
 @Primary
@@ -137,7 +138,8 @@ public class OsCredentialSecretStore implements SecretStore {
             cred.Persist = CRED_PERSIST_LOCAL_MACHINE;
             cred.UserName = new WString(SERVICE);
             if (!Advapi32Cred.INSTANCE.CredWrite(cred, 0)) {
-                throw new PlatformException("SECRET_STORE_UNAVAILABLE", "error.secretStoreUnavailable");
+                throw new PlatformException(
+                        "SECRET_STORE_UNAVAILABLE", "error.secretStoreUnavailable");
             }
         }
 
@@ -239,7 +241,8 @@ public class OsCredentialSecretStore implements SecretStore {
                                     "-U"),
                             null);
             if (code != 0) {
-                throw new PlatformException("SECRET_STORE_UNAVAILABLE", "error.secretStoreUnavailable");
+                throw new PlatformException(
+                        "SECRET_STORE_UNAVAILABLE", "error.secretStoreUnavailable");
             }
         }
 
@@ -262,15 +265,7 @@ public class OsCredentialSecretStore implements SecretStore {
         }
 
         static void delete(String account) {
-            run(
-                    List.of(
-                            "security",
-                            "delete-generic-password",
-                            "-a",
-                            SERVICE,
-                            "-s",
-                            account),
-                    null);
+            run(List.of("security", "delete-generic-password", "-a", SERVICE, "-s", account), null);
         }
     }
 
@@ -291,7 +286,8 @@ public class OsCredentialSecretStore implements SecretStore {
                                     account),
                             secret);
             if (code != 0) {
-                throw new PlatformException("SECRET_STORE_UNAVAILABLE", "error.secretStoreUnavailable");
+                throw new PlatformException(
+                        "SECRET_STORE_UNAVAILABLE", "error.secretStoreUnavailable");
             }
         }
 
@@ -313,15 +309,7 @@ public class OsCredentialSecretStore implements SecretStore {
         }
 
         static void delete(String account) {
-            run(
-                    List.of(
-                            "secret-tool",
-                            "clear",
-                            "service",
-                            SERVICE,
-                            "account",
-                            account),
-                    null);
+            run(List.of("secret-tool", "clear", "service", SERVICE, "account", account), null);
         }
     }
 
@@ -338,7 +326,8 @@ public class OsCredentialSecretStore implements SecretStore {
             process.getInputStream().transferTo(java.io.OutputStream.nullOutputStream());
             if (!process.waitFor(15, TimeUnit.SECONDS)) {
                 process.destroyForcibly();
-                throw new PlatformException("SECRET_STORE_UNAVAILABLE", "error.secretStoreUnavailable");
+                throw new PlatformException(
+                        "SECRET_STORE_UNAVAILABLE", "error.secretStoreUnavailable");
             }
             return process.exitValue();
         } catch (PlatformException ex) {
@@ -355,7 +344,8 @@ public class OsCredentialSecretStore implements SecretStore {
             StringBuilder stdout = new StringBuilder();
             try (BufferedReader reader =
                     new BufferedReader(
-                            new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
+                            new InputStreamReader(
+                                    process.getInputStream(), StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     if (!stdout.isEmpty()) {

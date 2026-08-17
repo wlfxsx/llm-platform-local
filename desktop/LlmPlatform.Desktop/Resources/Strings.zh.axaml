@@ -206,10 +206,21 @@
   <sys:String x:Key="CapNetworkBlocked">需要先在“常规”页打开“联网”总开关</sys:String>
   <sys:String x:Key="CapEmbedding">向量化</sys:String>
   <sys:String x:Key="CapEmbeddingDesc">为本地知识库生成向量索引</sys:String>
+  <sys:String x:Key="CapGraphRag">GraphRAG</sys:String>
+  <sys:String x:Key="CapGraphRagDesc">用远程大模型抽取实体关系，回答跨段落关系问题</sys:String>
+  <sys:String x:Key="CapHyde">HyDE</sys:String>
+  <sys:String x:Key="CapHydeDesc">用远程大模型生成假设答案再检索，提升短问句召回</sys:String>
+  <sys:String x:Key="CapRemoteOnly">需先在“常规”页切换到远程大模型</sys:String>
 
   <sys:String x:Key="Rag">知识库</sys:String>
   <sys:String x:Key="RagDesc">导入的文档会切分并建立本地索引</sys:String>
+  <sys:String x:Key="RagDocuments">知识库文档</sys:String>
   <sys:String x:Key="ImportDocument">导入文档</sys:String>
+  <sys:String x:Key="EmbeddingStatusReady">向量模型运行中</sys:String>
+  <sys:String x:Key="EmbeddingStatusIdle">向量模型已就绪，将在导入或检索时启动</sys:String>
+  <sys:String x:Key="EmbeddingStatusMissing">未找到 BGE-M3，请放到用户数据目录 models/embedding</sys:String>
+  <sys:String x:Key="RerankStatusReady">重排模型运行中</sys:String>
+  <sys:String x:Key="RerankStatusMissing">未找到 reranker，检索将仅使用混合召回</sys:String>
   <sys:String x:Key="Tools">工具</sys:String>
   <sys:String x:Key="ToolsDesc">已注册的本地工具</sys:String>
   <sys:String x:Key="Mcp">MCP 服务</sys:String>

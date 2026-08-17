@@ -9,4 +9,8 @@ public interface RagProvider {
     String id();
 
     List<RagChunk> retrieve(String query, int topK);
+
+    default List<RagChunk> retrieve(String query, int topK, String sessionId) {
+        return retrieve(query, topK);
+    }
 }

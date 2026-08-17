@@ -41,14 +41,14 @@ public class ModelConfigService {
         return get(modelId);
     }
 
-    /**
-     * 推理用的采样/压缩参数：本地走当前模型配置；远程无本地模型时回退到安全默认值。
-     */
+    /** 推理用的采样/压缩参数：本地走当前模型配置；远程无本地模型时回退到安全默认值。 */
     public ModelConfigView currentForInference() {
         AppSettings settings = settingsService.current();
         if (settings.remoteChat()) {
             String modelId = settings.currentModelId();
-            if (modelId != null && !modelId.isBlank() && modelRepository.findById(modelId).isPresent()) {
+            if (modelId != null
+                    && !modelId.isBlank()
+                    && modelRepository.findById(modelId).isPresent()) {
                 return get(modelId);
             }
             return toView(ModelConfigEntity.defaults(""), false);

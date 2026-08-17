@@ -5,8 +5,8 @@ import java.util.Locale;
 /**
  * 把显卡映射为 llamafile 的 {@code --gpu} 后端取值。
  *
- * <p>llamafile 接受 auto、apple、amd、nvidia、vulkan 和 disable。显式指定后端时探测失败会直接退出进程， 因此只对自带预编译库的 NVIDIA
- * 走 CUDA、Apple 走 Metal，其余显卡统一走驱动自带的 Vulkan： AMD 的 ROCm 与 Intel 核显在多数 Windows 机器上并不可用。
+ * <p>llamafile 接受 auto、apple、amd、nvidia、vulkan 和 disable。显式指定后端时探测失败会直接退出进程， 因此只对自带预编译库的 NVIDIA 走
+ * CUDA、Apple 走 Metal，其余显卡统一走驱动自带的 Vulkan： AMD 的 ROCm 与 Intel 核显在多数 Windows 机器上并不可用。
  */
 public final class GpuVendors {
 

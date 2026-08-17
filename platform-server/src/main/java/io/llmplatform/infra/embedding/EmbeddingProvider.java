@@ -6,4 +6,12 @@ public interface EmbeddingProvider {
     String id();
 
     float[] embed(String text);
+
+    default float[] embedQuery(String text) {
+        return embed(text);
+    }
+
+    default float[] embedDocument(String text) {
+        return embed(text);
+    }
 }

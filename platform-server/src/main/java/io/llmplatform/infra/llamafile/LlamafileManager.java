@@ -18,21 +18,16 @@ import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.CodeSource;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -50,6 +45,7 @@ public class LlamafileManager {
     private final ModelRepository modelRepository;
     private final ModelConfigRepository modelConfigRepository;
     private final HardwareService hardwareService;
+    private final LlamafileBinaryLocator binaryLocator;
     private final HttpClient httpClient =
             HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(3)).build();
     private final AtomicReference<Process> process = new AtomicReference<>();
@@ -61,12 +57,14 @@ public class LlamafileManager {
             SettingsService settingsService,
             ModelRepository modelRepository,
             ModelConfigRepository modelConfigRepository,
-            HardwareService hardwareService) {
+            HardwareService hardwareService,
+            LlamafileBinaryLocator binaryLocator) {
         this.properties = properties;
         this.settingsService = settingsService;
         this.modelRepository = modelRepository;
         this.modelConfigRepository = modelConfigRepository;
         this.hardwareService = hardwareService;
+        this.binaryLocator = binaryLocator;
     }
 
     /** 仅在显式启动时加载当前模型。已就绪则直接返回，避免把“启动”做成隐式重启。 */
@@ -80,7 +78,7 @@ public class LlamafileManager {
             return status();
         }
         stop();
-        Path binary = resolveBinary(settings);
+        Path binary = binaryLocator.resolve(settings);
         settings = ensureFreePort(settings);
         ModelConfigEntity config = currentConfig(settings);
         List<String> command = new ArrayList<>();
@@ -307,68 +305,6 @@ public class LlamafileManager {
         return modelRepository.findById(settings.currentModelId()).orElse(null);
     }
 
-    private Path resolveBinary(AppSettings settings) {
-        String fileName =
-                System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("win")
-                        ? "llamafile.exe"
-                        : "llamafile";
-        Set<Path> candidates = new LinkedHashSet<>();
-        if (settings.llamafileBinary() != null && !settings.llamafileBinary().isBlank()) {
-            candidates.add(Path.of(settings.llamafileBinary()));
-        }
-        if (!properties.getLlamafile().getBinaryPath().isBlank()) {
-            candidates.add(Path.of(properties.getLlamafile().getBinaryPath()));
-        }
-        Path cwd = Path.of("").toAbsolutePath().normalize();
-        candidates.add(cwd.resolve(fileName));
-        candidates.add(cwd.resolve("runtime").resolve(fileName));
-        Path jarDir = locateJarDirectory();
-        if (jarDir != null) {
-            candidates.add(jarDir.resolve(fileName));
-            candidates.add(jarDir.resolve("runtime").resolve(fileName));
-            Path parent = jarDir.getParent();
-            if (parent != null) {
-                candidates.add(parent.resolve("runtime").resolve(fileName));
-            }
-        }
-        // 仅开发机：仓库 .me/files 下的本机二进制，不入库。
-        Path walk = cwd;
-        for (int i = 0; i < 8 && walk != null; i++) {
-            candidates.add(walk.resolve(".me").resolve("files").resolve(fileName));
-            walk = walk.getParent();
-        }
-        for (Path path : candidates) {
-            if (Files.isRegularFile(path)) {
-                return path.toAbsolutePath().normalize();
-            }
-        }
-        throw new PlatformException("LLAMAFILE_FAILED", "error.llamafileFailed");
-    }
-
-    /** 定位可执行 JAR 所在目录，便于找到同目录或同级 runtime 下的 llamafile。 */
-    private Path locateJarDirectory() {
-        try {
-            CodeSource source = LlamafileManager.class.getProtectionDomain().getCodeSource();
-            if (source == null) {
-                return null;
-            }
-            URL location = source.getLocation();
-            if (location == null) {
-                return null;
-            }
-            Path path = Path.of(location.toURI());
-            if (Files.isRegularFile(path)) {
-                return path.getParent();
-            }
-            if (Files.isDirectory(path)) {
-                return path;
-            }
-        } catch (URISyntaxException ignored) {
-            // 类路径异常时回退到其它候选路径。
-        }
-        return null;
-    }
-
     private void drainOutput(Process started) {
         Thread previous = outputDrainer.getAndSet(null);
         if (previous != null) {
@@ -405,7 +341,7 @@ public class LlamafileManager {
         int port = settings.llamafilePort();
         Path binary = null;
         try {
-            binary = resolveBinary(settings).toAbsolutePath().normalize();
+            binary = binaryLocator.resolve(settings).toAbsolutePath().normalize();
         } catch (PlatformException ignored) {
             // 二进制无法解析时仍按进程名和端口清扫，避免退出后残留占用。
         }

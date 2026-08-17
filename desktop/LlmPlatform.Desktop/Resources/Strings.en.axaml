@@ -206,10 +206,21 @@
   <sys:String x:Key="CapNetworkBlocked">Turn on Network on the General page first</sys:String>
   <sys:String x:Key="CapEmbedding">Embedding</sys:String>
   <sys:String x:Key="CapEmbeddingDesc">Build vector indexes for the local knowledge base</sys:String>
+  <sys:String x:Key="CapGraphRag">GraphRAG</sys:String>
+  <sys:String x:Key="CapGraphRagDesc">Extract entity relations with a remote model for cross-passage questions</sys:String>
+  <sys:String x:Key="CapHyde">HyDE</sys:String>
+  <sys:String x:Key="CapHydeDesc">Generate a hypothetical answer with a remote model to improve short-query recall</sys:String>
+  <sys:String x:Key="CapRemoteOnly">Switch to a remote model on the General page first</sys:String>
 
   <sys:String x:Key="Rag">Knowledge</sys:String>
   <sys:String x:Key="RagDesc">Imported documents are chunked and indexed locally</sys:String>
+  <sys:String x:Key="RagDocuments">Knowledge documents</sys:String>
   <sys:String x:Key="ImportDocument">Import document</sys:String>
+  <sys:String x:Key="EmbeddingStatusReady">Embedding model is running</sys:String>
+  <sys:String x:Key="EmbeddingStatusIdle">Embedding model is available and starts on import or search</sys:String>
+  <sys:String x:Key="EmbeddingStatusMissing">BGE-M3 not found. Place it under models/embedding in the user data directory</sys:String>
+  <sys:String x:Key="RerankStatusReady">Reranker is running</sys:String>
+  <sys:String x:Key="RerankStatusMissing">Reranker not found; retrieval will use hybrid ranking only</sys:String>
   <sys:String x:Key="Tools">Tools</sys:String>
   <sys:String x:Key="ToolsDesc">Registered local tools</sys:String>
   <sys:String x:Key="Mcp">MCP servers</sys:String>

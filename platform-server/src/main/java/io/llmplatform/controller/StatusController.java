@@ -1,7 +1,9 @@
 package io.llmplatform.controller;
 
 import io.llmplatform.common.error.PlatformException;
+import io.llmplatform.infra.embedding.EmbeddingLlamafileManager;
 import io.llmplatform.infra.llamafile.LlamafileManager;
+import io.llmplatform.infra.rag.RerankLlamafileManager;
 import io.llmplatform.pojo.dto.LlamafileStartRequest;
 import io.llmplatform.pojo.entity.AppSettings;
 import io.llmplatform.pojo.vo.LlamafileStatus;
@@ -24,6 +26,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class StatusController {
 
     private final LlamafileManager llamafileManager;
+    private final EmbeddingLlamafileManager embeddingLlamafileManager;
+    private final RerankLlamafileManager rerankLlamafileManager;
     private final VectorExtensionLoader vectorExtensionLoader;
     private final ModelConfigProfileService profileService;
     private final SettingsService settingsService;
@@ -31,11 +35,15 @@ public class StatusController {
 
     public StatusController(
             LlamafileManager llamafileManager,
+            EmbeddingLlamafileManager embeddingLlamafileManager,
+            RerankLlamafileManager rerankLlamafileManager,
             VectorExtensionLoader vectorExtensionLoader,
             ModelConfigProfileService profileService,
             SettingsService settingsService,
             RemoteModelService remoteModelService) {
         this.llamafileManager = llamafileManager;
+        this.embeddingLlamafileManager = embeddingLlamafileManager;
+        this.rerankLlamafileManager = rerankLlamafileManager;
         this.vectorExtensionLoader = vectorExtensionLoader;
         this.profileService = profileService;
         this.settingsService = settingsService;
@@ -50,11 +58,15 @@ public class StatusController {
         boolean ready = settings.remoteChat() ? remote.ready() : local.healthy();
         return new PlatformStatus(
                 local,
+                embeddingLlamafileManager.status(),
+                rerankLlamafileManager.status(),
                 remote,
                 settings.chatProvider(),
                 ready,
                 vectorExtensionLoader.loaded(),
-                vectorExtensionLoader.version());
+                vectorExtensionLoader.version(),
+                embeddingLlamafileManager.modelPresent(),
+                rerankLlamafileManager.modelPresent());
     }
 
     /** 指定策略时先把策略参数写入当前模型，再拉起进程，保证运行参数与所选策略一致。 */

@@ -18,6 +18,47 @@ public sealed class FileDialogService
 
     public async Task<string?> OpenFileAsync(CancellationToken cancellationToken)
     {
+        return await OpenFileAsync(cancellationToken, null).ConfigureAwait(true);
+    }
+
+    public async Task<string?> OpenDocumentAsync(CancellationToken cancellationToken)
+    {
+        FilePickerFileType documents =
+            new(_localization.Text("RagDocuments"))
+            {
+                Patterns =
+                [
+                    "*.txt",
+                    "*.md",
+                    "*.markdown",
+                    "*.html",
+                    "*.htm",
+                    "*.pdf",
+                    "*.docx",
+                    "*.doc",
+                    "*.rtf",
+                    "*.odt",
+                    "*.csv",
+                    "*.json",
+                    "*.xml",
+                    "*.yml",
+                    "*.yaml",
+                    "*.log",
+                    "*.java",
+                    "*.cs",
+                    "*.py",
+                    "*.js",
+                    "*.ts",
+                    "*.go"
+                ]
+            };
+        return await OpenFileAsync(cancellationToken, [documents, FilePickerFileTypes.All]).ConfigureAwait(true);
+    }
+
+    private async Task<string?> OpenFileAsync(
+        CancellationToken cancellationToken,
+        IReadOnlyList<FilePickerFileType>? types)
+    {
         if (Host is null)
         {
             return null;
@@ -28,7 +69,8 @@ public sealed class FileDialogService
             new FilePickerOpenOptions
             {
                 AllowMultiple = false,
-                Title = _localization.Text("SelectFile")
+                Title = _localization.Text("SelectFile"),
+                FileTypeFilter = types
             });
         cancellationToken.ThrowIfCancellationRequested();
         return files.Count > 0 ? files[0].TryGetLocalPath() : null;

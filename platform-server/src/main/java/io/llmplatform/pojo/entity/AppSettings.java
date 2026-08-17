@@ -20,6 +20,8 @@ public record AppSettings(
         String embeddingModel,
         String embeddingBaseUrl,
         @Min(0) int embeddingDimension,
+        @Min(0) @Max(65535) int embeddingLlamafilePort,
+        @Min(0) @Max(65535) int rerankLlamafilePort,
         boolean networkEnabled,
         /** local | remote；决定对话走 llamafile 还是远程 OpenAI 兼容接口。 */
         String chatProvider,
@@ -38,6 +40,18 @@ public record AppSettings(
         if (hardwareDeviceId == null) {
             hardwareDeviceId = "";
         }
+        if (embeddingProvider == null || embeddingProvider.isBlank()) {
+            embeddingProvider = "local";
+        }
+        if (embeddingLlamafilePort <= 0) {
+            embeddingLlamafilePort = 17892;
+        }
+        if (rerankLlamafilePort <= 0) {
+            rerankLlamafilePort = 17893;
+        }
+        if (embeddingDimension <= 0) {
+            embeddingDimension = 1024;
+        }
     }
 
     /**
@@ -47,7 +61,8 @@ public record AppSettings(
      */
     public static AppSettings defaults() {
         return new AppSettings(
-                "zh", "system", "", "", 17891, "", "local", "", "local", "", "", 0, false, "local", "");
+                "zh", "system", "", "", 17891, "", "local", "", "local", "", "", 1024, 17892, 17893,
+                false, "local", "");
     }
 
     public boolean remoteChat() {
@@ -55,12 +70,67 @@ public record AppSettings(
     }
 
     public AppSettings withLlamafilePort(int port) {
+        return copy(
+                llamafileBinary,
+                port,
+                embeddingLlamafilePort,
+                rerankLlamafilePort,
+                currentModelId,
+                currentRemoteModelId,
+                networkEnabled);
+    }
+
+    public AppSettings withEmbeddingLlamafilePort(int port) {
+        return copy(
+                llamafileBinary,
+                llamafilePort,
+                port,
+                rerankLlamafilePort,
+                currentModelId,
+                currentRemoteModelId,
+                networkEnabled);
+    }
+
+    public AppSettings withRerankLlamafilePort(int port) {
+        return copy(
+                llamafileBinary,
+                llamafilePort,
+                embeddingLlamafilePort,
+                port,
+                currentModelId,
+                currentRemoteModelId,
+                networkEnabled);
+    }
+
+    public AppSettings withCurrentModelId(String modelId) {
+        return copy(
+                llamafileBinary,
+                llamafilePort,
+                embeddingLlamafilePort,
+                rerankLlamafilePort,
+                modelId,
+                currentRemoteModelId,
+                networkEnabled);
+    }
+
+    public AppSettings withCurrentRemoteModelId(String remoteModelId) {
+        return copy(
+                llamafileBinary,
+                llamafilePort,
+                embeddingLlamafilePort,
+                rerankLlamafilePort,
+                currentModelId,
+                remoteModelId,
+                networkEnabled);
+    }
+
+    public AppSettings withChatProvider(String provider, String remoteModelId) {
         return new AppSettings(
                 language,
                 theme,
                 currentModelId,
                 llamafileBinary,
-                port,
+                llamafilePort,
                 hardwareDeviceId,
                 ragProvider,
                 ragRemoteUrl,
@@ -68,18 +138,38 @@ public record AppSettings(
                 embeddingModel,
                 embeddingBaseUrl,
                 embeddingDimension,
+                embeddingLlamafilePort,
+                rerankLlamafilePort,
                 networkEnabled,
-                chatProvider,
-                currentRemoteModelId);
+                provider,
+                remoteModelId);
     }
 
-    public AppSettings withCurrentModelId(String modelId) {
+    public AppSettings withNetworkEnabled(boolean enabled) {
+        return copy(
+                llamafileBinary,
+                llamafilePort,
+                embeddingLlamafilePort,
+                rerankLlamafilePort,
+                currentModelId,
+                currentRemoteModelId,
+                enabled);
+    }
+
+    private AppSettings copy(
+            String binary,
+            int chatPort,
+            int embeddingPort,
+            int rerankPort,
+            String modelId,
+            String remoteModelId,
+            boolean network) {
         return new AppSettings(
                 language,
                 theme,
                 modelId,
-                llamafileBinary,
-                llamafilePort,
+                binary,
+                chatPort,
                 hardwareDeviceId,
                 ragProvider,
                 ragRemoteUrl,
@@ -87,26 +177,9 @@ public record AppSettings(
                 embeddingModel,
                 embeddingBaseUrl,
                 embeddingDimension,
-                networkEnabled,
-                chatProvider,
-                currentRemoteModelId);
-    }
-
-    public AppSettings withCurrentRemoteModelId(String remoteModelId) {
-        return new AppSettings(
-                language,
-                theme,
-                currentModelId,
-                llamafileBinary,
-                llamafilePort,
-                hardwareDeviceId,
-                ragProvider,
-                ragRemoteUrl,
-                embeddingProvider,
-                embeddingModel,
-                embeddingBaseUrl,
-                embeddingDimension,
-                networkEnabled,
+                embeddingPort,
+                rerankPort,
+                network,
                 chatProvider,
                 remoteModelId);
     }

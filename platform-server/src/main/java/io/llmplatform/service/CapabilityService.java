@@ -44,6 +44,11 @@ public class CapabilityService {
             if (CapabilityIds.NETWORK.equals(id) && !settingsService.current().networkEnabled()) {
                 enabled = false;
                 reason = "error.networkDisabled";
+            } else if (isRemoteEnhancement(id) && !remoteEnhancementAvailable()) {
+                reason =
+                        settingsService.current().remoteChat()
+                                ? "error.networkDisabled"
+                                : "error.remoteEnhancementRequiresRemote";
             } else if (!enabled) {
                 reason = "error.capabilityDisabled";
             }
@@ -107,5 +112,14 @@ public class CapabilityService {
             boolean enabled = CapabilityIds.CHAT.equals(id) || CapabilityIds.CONTEXT.equals(id);
             capabilityRepository.insertDefault(id, enabled);
         }
+    }
+
+    private static boolean isRemoteEnhancement(String capabilityId) {
+        return CapabilityIds.GRAPH_RAG.equals(capabilityId)
+                || CapabilityIds.HYDE.equals(capabilityId);
+    }
+
+    private boolean remoteEnhancementAvailable() {
+        return settingsService.current().remoteChat() && settingsService.current().networkEnabled();
     }
 }

@@ -48,10 +48,6 @@ public class RagController {
     @PostMapping("/search")
     public List<RagChunk> search(@Valid @RequestBody RagSearchRequest body) {
         String sessionId = body.sessionId() == null ? "" : body.sessionId();
-        String text = ragService.retrieve(body.query(), sessionId);
-        if (text.isBlank()) {
-            return List.of();
-        }
-        return List.of(new RagChunk("preview", "", text, 1.0));
+        return ragService.retrieveChunks(body.query(), sessionId);
     }
 }

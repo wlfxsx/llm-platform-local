@@ -2,14 +2,16 @@ package io.llmplatform.service;
 
 import io.llmplatform.common.constant.CapabilityIds;
 import io.llmplatform.infra.agentscope.AgentScopeRuntimeAdapter;
-import io.llmplatform.infra.llm.ChatModelClient;
 import io.llmplatform.infra.llamafile.TokenCounter;
+import io.llmplatform.infra.llm.ChatModelClient;
 import io.llmplatform.infra.monitor.InferenceThroughputTracker;
+import io.llmplatform.infra.rag.RagContextFormatter;
 import io.llmplatform.pojo.dto.ChatMessage;
 import io.llmplatform.pojo.dto.ChatRequest;
 import io.llmplatform.pojo.vo.ChatResponse;
 import io.llmplatform.pojo.vo.ModelConfigView;
 import io.llmplatform.pojo.vo.PlatformTool;
+import io.llmplatform.pojo.vo.RagChunk;
 import io.llmplatform.repository.ChatRepository;
 import io.llmplatform.websocket.PlatformWebSocketHandler;
 import java.util.ArrayList;
@@ -106,10 +108,20 @@ public class ChatService {
         StringBuilder system = new StringBuilder();
         system.append(skillService.promptFor(sessionId));
         String lastUser = lastUser(source);
-        String rag = ragService.retrieve(lastUser, sessionId);
+        List<RagChunk> ragChunks = ragService.retrieveChunks(lastUser, sessionId);
+        String rag = RagContextFormatter.format(ragChunks);
         if (!rag.isBlank()) {
             system.append("\nRAG:\n").append(rag);
-            webSocketHandler.publish("rag.hit", sessionId, Map.of("chars", rag.length()));
+            webSocketHandler.publish(
+                    "rag.hit",
+                    sessionId,
+                    Map.of(
+                            "chars",
+                            rag.length(),
+                            "hits",
+                            ragChunks.size(),
+                            "titles",
+                            RagContextFormatter.titles(ragChunks)));
         }
         for (PlatformTool tool : toolService.enabledFor(sessionId)) {
             system.append("\nTool: ").append(tool.name()).append(" - ").append(tool.description());

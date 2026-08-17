@@ -24,6 +24,14 @@ public class UserDataPaths {
         return root.resolve("models");
     }
 
+    public Path embeddingModels() {
+        return models().resolve("embedding");
+    }
+
+    public Path rerankModels() {
+        return models().resolve("rerank");
+    }
+
     public Path plugins() {
         return root.resolve("plugins");
     }
@@ -43,6 +51,8 @@ public class UserDataPaths {
     public void ensureDirectories() {
         try {
             Files.createDirectories(models());
+            Files.createDirectories(embeddingModels());
+            Files.createDirectories(rerankModels());
             Files.createDirectories(plugins());
             Files.createDirectories(skills());
             Files.createDirectories(rag());

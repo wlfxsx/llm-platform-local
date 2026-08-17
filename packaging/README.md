@@ -8,10 +8,11 @@
 - 后端：`platform-server` 可执行 JAR
 - 可选 Java 运行时：通过 `JAVA_HOME` 提供
 - 可选 llamafile：对应操作系统和架构的二进制
+- 可选知识库权重：`runtime/models/embedding/` 与 `runtime/models/rerank/` 下的 BGE GGUF
 - 可选 SQLite 向量扩展：按目标平台放入输出目录的 `native/`
 - 许可证：根目录 `LICENSE`、`NOTICE`，以及 `THIRD-PARTY-NOTICES.md`
 
-组装目录不包含 GGUF 模型。用户可在应用中导入本地模型，或配置远程 OpenAI 兼容模型。
+组装目录默认不包含对话用 GGUF。用户可在应用中导入本地对话模型，或配置远程 OpenAI 兼容模型。知识库向量/重排权重可按下方布局一并放入 `runtime/models/`。
 
 ## 前置条件
 
@@ -30,6 +31,9 @@ llm-platform/
     jre/                     （可选，需 LLM_BUNDLE_JRE=1）
     platform-server.jar
     llamafile 或 llamafile.exe （可选）
+    models/
+      embedding/bge-m3-q4_k_m.gguf              （可选，知识库向量）
+      rerank/bge-reranker-v2-m3-q4_k_m.gguf     （可选，知识库重排）
   native/
     README.md
     vec0.dll / vec0.so / vec0.dylib  （可选，需手动放入）

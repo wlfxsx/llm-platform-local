@@ -35,7 +35,7 @@ public class SqliteVectorStore implements VectorStore {
                 sql,
                 rs -> {
                     float[] stored = fromBytes(rs.getBytes("embedding"));
-                    if (stored.length == 0) {
+                    if (stored.length == 0 || stored.length != query.length) {
                         return;
                     }
                     hits.add(

@@ -177,6 +177,12 @@ public sealed partial class SettingsViewModel : ViewModelBase
     private string _modelRuntimeStatus = string.Empty;
 
     [ObservableProperty]
+    private string _embeddingRuntimeStatus = string.Empty;
+
+    [ObservableProperty]
+    private string _rerankRuntimeStatus = string.Empty;
+
+    [ObservableProperty]
     private string _profileName = string.Empty;
 
     [ObservableProperty]
@@ -780,7 +786,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
 
     private async Task ImportDocumentCoreAsync(CancellationToken cancellationToken)
     {
-        string? path = await _dialogs.OpenFileAsync(cancellationToken).ConfigureAwait(true);
+        string? path = await _dialogs.OpenDocumentAsync(cancellationToken).ConfigureAwait(true);
         if (path is null)
         {
             return;
@@ -906,6 +912,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
         }
 
         ApplyChatProviderFlags(value.Value);
+        SyncCapabilityLocks();
         SyncRemoteLocks();
         NotifyLock();
         _ = AutoSaveAsync(reloadLists: false);
@@ -1165,7 +1172,47 @@ public sealed partial class SettingsViewModel : ViewModelBase
             }
         }
 
+        ApplyAuxiliaryStatus(status);
         NotifyLock();
+    }
+
+    private void ApplyAuxiliaryStatus(JsonElement status)
+    {
+        EmbeddingRuntimeStatus = AuxiliaryStatusText(
+            status,
+            "embedding",
+            "embeddingModelPresent",
+            "EmbeddingStatusReady",
+            "EmbeddingStatusMissing");
+        RerankRuntimeStatus = AuxiliaryStatusText(
+            status,
+            "rerank",
+            "rerankModelPresent",
+            "RerankStatusReady",
+            "RerankStatusMissing");
+    }
+
+    private string AuxiliaryStatusText(
+        JsonElement status,
+        string processProperty,
+        string presentProperty,
+        string readyKey,
+        string missingKey)
+    {
+        bool present = status.TryGetProperty(presentProperty, out JsonElement presentNode) && presentNode.GetBoolean();
+        if (!present)
+        {
+            return _localization.Text(missingKey);
+        }
+
+        if (status.TryGetProperty(processProperty, out JsonElement process)
+            && process.TryGetProperty("healthy", out JsonElement healthy)
+            && healthy.GetBoolean())
+        {
+            return _localization.Text(readyKey);
+        }
+
+        return _localization.Text("EmbeddingStatusIdle");
     }
 
     /// <summary>列表刷新后必须保持有选中项，否则模型无法启动、参数表单也失去归属。</summary>
@@ -1238,6 +1285,8 @@ public sealed partial class SettingsViewModel : ViewModelBase
             "skills" => "CapSkills",
             "network" => "CapNetwork",
             "embedding" => "CapEmbedding",
+            "graph.rag" => "CapGraphRag",
+            "hyde" => "CapHyde",
             _ => id
         };
     }
@@ -1255,6 +1304,8 @@ public sealed partial class SettingsViewModel : ViewModelBase
             "skills" => "Lightbulb",
             "network" => "Network",
             "embedding" => "Grid",
+            "graph.rag" => "Document",
+            "hyde" => "Lightbulb",
             _ => "Settings"
         };
     }
@@ -1435,13 +1486,24 @@ public sealed partial class SettingsViewModel : ViewModelBase
     {
         foreach (CapabilityItemViewModel capability in Capabilities)
         {
-            if (!string.Equals(capability.Id, "network", StringComparison.Ordinal))
+            if (string.Equals(capability.Id, "network", StringComparison.Ordinal))
             {
+                capability.Locked = !NetworkEnabled;
+                capability.Hint = NetworkEnabled ? string.Empty : _localization.Text("CapNetworkBlocked");
                 continue;
             }
 
-            capability.Locked = !NetworkEnabled;
-            capability.Hint = NetworkEnabled ? string.Empty : _localization.Text("CapNetworkBlocked");
+            if (string.Equals(capability.Id, "graph.rag", StringComparison.Ordinal)
+                || string.Equals(capability.Id, "hyde", StringComparison.Ordinal))
+            {
+                bool remoteReady = IsRemoteChat && NetworkEnabled;
+                capability.Locked = !remoteReady;
+                capability.Hint = !IsRemoteChat
+                    ? _localization.Text("CapRemoteOnly")
+                    : NetworkEnabled
+                        ? string.Empty
+                        : _localization.Text("CapNetworkBlocked");
+            }
         }
     }
 
