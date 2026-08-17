@@ -1,8 +1,6 @@
-# 开发打包说明
+# 打包说明
 
-本目录包含开发阶段的应用组装脚本和 Windows 安装程序定义。当前项目尚未发布稳定版本，这些脚本用于验证可分发目录结构，不代表正式发行流程。
-
-所有构建和组装产物写入 `.me/build/`（仅开发机，不入库）。
+本目录包含应用组装脚本和 Windows 安装程序定义。构建与组装产物写入 `.me/build/`（仅开发机，不入库）。
 
 ## 捆绑内容
 
@@ -11,7 +9,7 @@
 - 可选 Java 运行时：通过 `JAVA_HOME` 提供
 - 可选 llamafile：对应操作系统和架构的二进制
 - 可选 SQLite 向量扩展：按目标平台放入输出目录的 `native/`
-- 第三方许可证：根目录 `LICENSE`、`NOTICE`，以及 `THIRD-PARTY-NOTICES.md`
+- 许可证：根目录 `LICENSE`、`NOTICE`，以及 `THIRD-PARTY-NOTICES.md`
 
 组装目录不包含 GGUF 模型。用户可在应用中导入本地模型，或配置远程 OpenAI 兼容模型。
 
@@ -63,9 +61,3 @@ llm-platform/
 ## Windows 安装程序
 
 安装 Inno Setup 后，可使用 `packaging/windows/llm-platform.iss` 把组装目录生成安装程序。安装程序输出位于 `.me/build/dist/installer/`（仅开发机）。
-
-## 发布边界
-
-- 不把模型权重、API Key、本机数据库或日志打进安装包。
-- 发布前需要核对目标平台依赖和 `THIRD-PARTY-NOTICES.md`。
-- 当前仓库没有自动签名、公证、自动更新或 GitHub Release 流程。

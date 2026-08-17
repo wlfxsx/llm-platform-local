@@ -2,8 +2,6 @@
 
 一个面向 Windows、macOS 和 Linux 的本地优先大模型桌面平台。项目使用 Java 21、Spring Boot、Avalonia、llamafile 和 AgentScope Java 构建。
 
-> 项目仍处于开发阶段，尚未提供稳定发行版。配置格式、数据库结构和用户界面可能继续调整。
-
 英文文档：[readme/README-EN.md](readme/README-EN.md)
 
 ## 功能概览
@@ -62,7 +60,7 @@ mvn package
 dotnet run --project desktop/LlmPlatform.Desktop/LlmPlatform.Desktop.csproj
 ```
 
-构建产物写入 `.me/build/`。该目录仅用于开发机，不会提交到仓库。自动化测试默认也不入库，仍可在本机 `platform-server/src/test/` 运行。
+构建产物写入 `.me/build/`（仅开发机，不入库）。自动化测试默认也不入库，仍可在本机 `platform-server/src/test/` 运行。
 
 ## 模型使用
 
@@ -72,7 +70,7 @@ dotnet run --project desktop/LlmPlatform.Desktop/LlmPlatform.Desktop.csproj
 
 ## 打包
 
-当前仓库提供开发阶段的组装脚本，不提供预构建安装包或 Release。详见 [packaging/README.md](packaging/README.md)。
+组装与安装程序脚本见 [packaging/README.md](packaging/README.md)。
 
 ## 分支
 

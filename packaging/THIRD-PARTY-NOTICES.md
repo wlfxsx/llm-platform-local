@@ -2,8 +2,7 @@
 
 This project is licensed under the Apache License 2.0. See the repository root
 `LICENSE` and `NOTICE` files. A packaged distribution may also include the
-following third-party software. This file is a source-level summary and does
-not replace the complete dependency and license report required for a release.
+following third-party software.
 
 ## AgentScope Java 2.0.1
 
@@ -73,8 +72,7 @@ not replace the complete dependency and license report required for a release.
 - Follow the upstream license of the chosen extension when copying binaries into `native/`.
 
 License texts and notices distributed by transitive dependencies remain subject
-to their respective upstream terms. A release build must preserve all notices
-required by the exact dependency versions and optional binaries included.
+to their respective upstream terms.
 
 Apache License 2.0:
 

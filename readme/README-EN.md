@@ -2,8 +2,6 @@
 
 A local-first desktop platform for large language models on Windows, macOS, and Linux. It is built with Java 21, Spring Boot, Avalonia, llamafile, and AgentScope Java.
 
-> This project is under active development and does not have a stable release yet. Configuration formats, the database schema, and the user interface may continue to change.
-
 Chinese documentation: [README.md](../README.md)
 
 ## Features
@@ -62,7 +60,7 @@ Then run the desktop application:
 dotnet run --project desktop/LlmPlatform.Desktop/LlmPlatform.Desktop.csproj
 ```
 
-Build outputs are written to `.me/build/`. This directory is local to the development machine and is not committed. Automated tests are also omitted from the repository by default; they can still be run locally from `platform-server/src/test/`.
+Build outputs are written to `.me/build/` (development machine only; not committed). Automated tests are also omitted from the repository by default; they can still be run locally from `platform-server/src/test/`.
 
 ## Model Setup
 
@@ -72,7 +70,7 @@ Build outputs are written to `.me/build/`. This directory is local to the develo
 
 ## Packaging
 
-The repository currently provides development-stage assembly scripts, not prebuilt installers or GitHub Releases. See [packaging/README.md](../packaging/README.md).
+Assembly and installer scripts are documented in [packaging/README.md](../packaging/README.md).
 
 ## Branches
 
