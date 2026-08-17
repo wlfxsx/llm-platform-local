@@ -1,6 +1,7 @@
 # Third-Party Notices
 
-This project directly depends on, and a packaged distribution may include, the
+This project is licensed under the Apache License 2.0. See the repository root
+`LICENSE` and `NOTICE` files. A packaged distribution may also include the
 following third-party software. This file is a source-level summary and does
 not replace the complete dependency and license report required for a release.
 

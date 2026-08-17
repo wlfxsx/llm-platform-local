@@ -78,3 +78,9 @@ The repository currently provides development-stage assembly scripts, not prebui
 
 - `dev`: default development branch
 - `main`: milestone-ready code
+
+## License
+
+This project is released under the [Apache License 2.0](../LICENSE). See [NOTICE](../NOTICE) for copyright attribution.
+
+Third-party dependency notices are summarized in [packaging/THIRD-PARTY-NOTICES.md](../packaging/THIRD-PARTY-NOTICES.md).

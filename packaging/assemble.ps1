@@ -28,6 +28,8 @@ if (Test-Path $jar) {
     Copy-Item $jar (Join-Path $dist "runtime\platform-server.jar") -Force
 }
 
+Copy-Item (Join-Path $root "LICENSE") $dist -Force
+Copy-Item (Join-Path $root "NOTICE") $dist -Force
 Copy-Item (Join-Path $root "packaging\THIRD-PARTY-NOTICES.md") $dist -Force
 Copy-Item (Join-Path $root "packaging\native\README.md") (Join-Path $dist "native") -Force
 

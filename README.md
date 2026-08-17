@@ -78,3 +78,9 @@ dotnet run --project desktop/LlmPlatform.Desktop/LlmPlatform.Desktop.csproj
 
 - `dev`：默认开发分支
 - `main`：阶段性稳定代码
+
+## 许可证
+
+本项目以 [Apache License 2.0](LICENSE) 开源发布。版权声明见 [NOTICE](NOTICE)。
+
+第三方依赖的许可证摘要见 [packaging/THIRD-PARTY-NOTICES.md](packaging/THIRD-PARTY-NOTICES.md)。

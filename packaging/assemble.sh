@@ -14,6 +14,8 @@ if [ -f "$jar" ]; then
   cp "$jar" "$dist/runtime/platform-server.jar"
 fi
 
+cp "$root/LICENSE" "$dist/"
+cp "$root/NOTICE" "$dist/"
 cp "$root/packaging/THIRD-PARTY-NOTICES.md" "$dist/"
 cp "$root/packaging/native/README.md" "$dist/native/"
 

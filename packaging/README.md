@@ -11,7 +11,7 @@
 - 可选 Java 运行时：通过 `JAVA_HOME` 提供
 - 可选 llamafile：对应操作系统和架构的二进制
 - 可选 SQLite 向量扩展：按目标平台放入输出目录的 `native/`
-- 第三方许可证：`THIRD-PARTY-NOTICES.md`
+- 第三方许可证：根目录 `LICENSE`、`NOTICE`，以及 `THIRD-PARTY-NOTICES.md`
 
 组装目录不包含 GGUF 模型。用户可在应用中导入本地模型，或配置远程 OpenAI 兼容模型。
 
@@ -35,6 +35,8 @@ llm-platform/
   native/
     README.md
     vec0.dll / vec0.so / vec0.dylib  （可选，需手动放入）
+  LICENSE
+  NOTICE
   THIRD-PARTY-NOTICES.md
 ```
 
