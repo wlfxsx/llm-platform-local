@@ -1,17 +1,26 @@
-# 安装包骨架
+# 开发打包说明
 
-本目录描述如何把本地 AI 框架平台打成可安装应用。构建产物写入 `.me/build/`，不进入 Git。
+本目录包含开发阶段的应用组装脚本和 Windows 安装程序定义。当前项目尚未发布稳定版本，这些脚本用于验证可分发目录结构，不代表正式发行流程。
+
+所有构建和组装产物写入 `.me/build/`，不会提交到仓库。
 
 ## 捆绑内容
 
 - 桌面壳：Avalonia 原生发布包
-- 后端：`platform-server` 可执行 jar（含锁定的 AgentScope Java 2.0.1）
-- JRE：Java 21 运行时
-- llamafile：对应操作系统/架构的二进制
-- SQLite 向量扩展：Vec1 或 sqlite-vec 动态库，放入 `native/`
+- 后端：`platform-server` 可执行 JAR
+- 可选 Java 运行时：通过 `JAVA_HOME` 提供
+- 可选 llamafile：对应操作系统和架构的二进制
+- 可选 SQLite 向量扩展：按目标平台放入输出目录的 `native/`
 - 第三方许可证：`THIRD-PARTY-NOTICES.md`
 
-安装包不内置 GGUF 模型。首次对话前需在设置中导入本地模型文件。
+组装目录不包含 GGUF 模型。用户可在应用中导入本地模型，或配置远程 OpenAI 兼容模型。
+
+## 前置条件
+
+- JDK 21
+- Maven 3.9+
+- .NET 10 SDK
+- 目标平台需要的可选运行时文件（JRE、llamafile、SQLite 向量扩展）
 
 ## 布局
 
@@ -31,7 +40,7 @@ llm-platform/
 
 在仓库根目录执行：
 
-- Windows：`powershell -File packaging/assemble.ps1`
+- Windows：`powershell -ExecutionPolicy Bypass -File packaging/assemble.ps1`
 - macOS / Linux：`sh packaging/assemble.sh`
 
 脚本会：
@@ -42,7 +51,17 @@ llm-platform/
 
 可选环境变量：
 
-- `LLM_BUNDLE_JRE=1`：从 `JAVA_HOME` 复制 JRE
-- `LLM_LLAMAFILE`：llamafile 二进制路径；缺省时尝试 `.me/files/` 下已有文件
+- `LLM_BUNDLE_JRE=1`：把 `JAVA_HOME` 指向的运行时复制到组装目录
+- `LLM_LLAMAFILE`：指定 llamafile 二进制；未指定时脚本尝试使用 `.me/files/` 中的本机文件
 
-Windows 可用 `packaging/windows/llm-platform.iss` 把组装目录打成安装程序。
+SQLite 向量扩展目前不由脚本自动下载。需要时将对应平台的动态库复制到 `.me/build/dist/llm-platform/native/`。
+
+## Windows 安装程序
+
+安装 Inno Setup 后，可使用 `packaging/windows/llm-platform.iss` 把组装目录生成安装程序。安装程序输出位于 `.me/build/dist/installer/`。
+
+## 发布边界
+
+- 不把模型权重、API Key、本机数据库或日志打进安装包。
+- 发布前需要核对目标平台依赖和 `THIRD-PARTY-NOTICES.md`。
+- 当前仓库没有自动签名、公证、自动更新或 GitHub Release 流程。

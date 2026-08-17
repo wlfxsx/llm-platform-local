@@ -1,9 +1,17 @@
 # SQLite 向量扩展
 
-按操作系统将 Vec1 或 sqlite-vec 动态库放到安装目录的 `native/`：
+SQLite 向量扩展是可选组件。按目标操作系统将 Vec1 或 sqlite-vec 动态库放到组装目录的 `native/`：
 
 - Windows：`vec0.dll`
 - Linux：`vec0.so` 或 `libvec0.so`
 - macOS：`vec0.dylib` 或 `libvec0.dylib`
 
-启动时后端会尝试加载；失败则使用 BLOB + 暴力检索，应用仍可启动。不要把扩展文件放到 `.me/`。
+开发机上的二进制源文件应放在 `.me/files/`，需要组装时再复制到：
+
+```text
+.me/build/dist/llm-platform/native/
+```
+
+后端启动时会尝试加载扩展；扩展缺失或加载失败时，向量数据仍可使用 BLOB 存储和暴力检索，应用可以继续启动。
+
+动态库不提交到仓库。分发前应核对所选扩展的版本、目标架构和许可证。
