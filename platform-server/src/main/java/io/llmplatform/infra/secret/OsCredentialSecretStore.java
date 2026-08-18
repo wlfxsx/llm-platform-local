@@ -1,10 +1,6 @@
 package io.llmplatform.infra.secret;
 
-import com.sun.jna.Memory;
-import com.sun.jna.Native;
-import com.sun.jna.Pointer;
-import com.sun.jna.Structure;
-import com.sun.jna.WString;
+import com.sun.jna.*;
 import com.sun.jna.ptr.PointerByReference;
 import com.sun.jna.win32.StdCallLibrary;
 import com.sun.jna.win32.W32APIOptions;
@@ -28,6 +24,78 @@ import org.springframework.stereotype.Component;
 public class OsCredentialSecretStore implements SecretStore {
 
     private static final String SERVICE = "llm-platform";
+
+    private static String target(String ref) {
+        return SERVICE + "/" + ref;
+    }
+
+    private static void requireRef(String ref) {
+        if (ref == null || ref.isBlank()) {
+            throw new PlatformException("INVALID_REQUEST", "error.invalidRequest");
+        }
+    }
+
+    private static int run(List<String> command, String stdin) {
+        Process process = null;
+        try {
+            ProcessBuilder builder = new ProcessBuilder(command);
+            builder.redirectErrorStream(true);
+            process = builder.start();
+            if (stdin != null) {
+                process.getOutputStream().write(stdin.getBytes(StandardCharsets.UTF_8));
+                process.getOutputStream().flush();
+            }
+            process.getOutputStream().close();
+            process.getInputStream().transferTo(java.io.OutputStream.nullOutputStream());
+            if (!process.waitFor(15, TimeUnit.SECONDS)) {
+                process.destroyForcibly();
+                throw new PlatformException(
+                        "SECRET_STORE_UNAVAILABLE", "error.secretStoreUnavailable");
+            }
+            return process.exitValue();
+        } catch (PlatformException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new PlatformException("SECRET_STORE_UNAVAILABLE", "error.secretStoreUnavailable");
+        } finally {
+            if (process != null && process.isAlive()) {
+                process.destroyForcibly();
+            }
+        }
+    }
+
+    private static ProcessResult runCapture(List<String> command) {
+        Process process = null;
+        try {
+            ProcessBuilder builder = new ProcessBuilder(command);
+            process = builder.start();
+            StringBuilder stdout = new StringBuilder();
+            try (BufferedReader reader =
+                    new BufferedReader(
+                            new InputStreamReader(
+                                    process.getInputStream(), StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (!stdout.isEmpty()) {
+                        stdout.append('\n');
+                    }
+                    stdout.append(line);
+                }
+            }
+            process.getErrorStream().transferTo(java.io.OutputStream.nullOutputStream());
+            if (!process.waitFor(15, TimeUnit.SECONDS)) {
+                process.destroyForcibly();
+                return new ProcessResult(1, "");
+            }
+            return new ProcessResult(process.exitValue(), stdout.toString());
+        } catch (Exception ex) {
+            return new ProcessResult(1, "");
+        } finally {
+            if (process != null && process.isAlive()) {
+                process.destroyForcibly();
+            }
+        }
+    }
 
     @Override
     public void put(String ref, String secret) {
@@ -90,16 +158,6 @@ public class OsCredentialSecretStore implements SecretStore {
             return value != null && !value.isBlank();
         } catch (PlatformException ex) {
             return false;
-        }
-    }
-
-    private static String target(String ref) {
-        return SERVICE + "/" + ref;
-    }
-
-    private static void requireRef(String ref) {
-        if (ref == null || ref.isBlank()) {
-            throw new PlatformException("INVALID_REQUEST", "error.invalidRequest");
         }
     }
 
@@ -310,58 +368,6 @@ public class OsCredentialSecretStore implements SecretStore {
 
         static void delete(String account) {
             run(List.of("secret-tool", "clear", "service", SERVICE, "account", account), null);
-        }
-    }
-
-    private static int run(List<String> command, String stdin) {
-        try {
-            ProcessBuilder builder = new ProcessBuilder(command);
-            builder.redirectErrorStream(true);
-            Process process = builder.start();
-            if (stdin != null) {
-                process.getOutputStream().write(stdin.getBytes(StandardCharsets.UTF_8));
-                process.getOutputStream().flush();
-            }
-            process.getOutputStream().close();
-            process.getInputStream().transferTo(java.io.OutputStream.nullOutputStream());
-            if (!process.waitFor(15, TimeUnit.SECONDS)) {
-                process.destroyForcibly();
-                throw new PlatformException(
-                        "SECRET_STORE_UNAVAILABLE", "error.secretStoreUnavailable");
-            }
-            return process.exitValue();
-        } catch (PlatformException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            throw new PlatformException("SECRET_STORE_UNAVAILABLE", "error.secretStoreUnavailable");
-        }
-    }
-
-    private static ProcessResult runCapture(List<String> command) {
-        try {
-            ProcessBuilder builder = new ProcessBuilder(command);
-            Process process = builder.start();
-            StringBuilder stdout = new StringBuilder();
-            try (BufferedReader reader =
-                    new BufferedReader(
-                            new InputStreamReader(
-                                    process.getInputStream(), StandardCharsets.UTF_8))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    if (!stdout.isEmpty()) {
-                        stdout.append('\n');
-                    }
-                    stdout.append(line);
-                }
-            }
-            process.getErrorStream().transferTo(java.io.OutputStream.nullOutputStream());
-            if (!process.waitFor(15, TimeUnit.SECONDS)) {
-                process.destroyForcibly();
-                return new ProcessResult(1, "");
-            }
-            return new ProcessResult(process.exitValue(), stdout.toString());
-        } catch (Exception ex) {
-            return new ProcessResult(1, "");
         }
     }
 

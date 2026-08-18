@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -178,27 +179,27 @@ public final class SchemaMigrator {
         // created_at 可能同毫秒重复，因此用 rowid 作为旧库一次性回填时的稳定次序兜底。
         statement.execute(
                 """
-                UPDATE messages
-                SET sequence_no = (
-                    SELECT COUNT(*)
-                    FROM messages AS older
-                    WHERE older.session_id = messages.session_id
-                      AND (
-                          older.created_at < messages.created_at
-                          OR (older.created_at = messages.created_at AND older.rowid <= messages.rowid)
-                      )
-                )
-                WHERE sequence_no = 0
-                """);
+                        UPDATE messages
+                        SET sequence_no = (
+                            SELECT COUNT(*)
+                            FROM messages AS older
+                            WHERE older.session_id = messages.session_id
+                              AND (
+                                  older.created_at < messages.created_at
+                                  OR (older.created_at = messages.created_at AND older.rowid <= messages.rowid)
+                              )
+                        )
+                        WHERE sequence_no = 0
+                        """);
         statement.execute(
                 """
-                UPDATE sessions
-                SET next_sequence = (
-                    SELECT COALESCE(MAX(sequence_no), 0) + 1
-                    FROM messages
-                    WHERE messages.session_id = sessions.id
-                )
-                """);
+                        UPDATE sessions
+                        SET next_sequence = (
+                            SELECT COALESCE(MAX(sequence_no), 0) + 1
+                            FROM messages
+                            WHERE messages.session_id = sessions.id
+                        )
+                        """);
     }
 
     /** 旧版全局模型参数曾写在 settings JSON 里；升级后复制到当时已有的每个模型配置。 */
@@ -213,11 +214,12 @@ public final class SchemaMigrator {
             }
         }
         long now = System.currentTimeMillis();
+        Connection connection = statement.getConnection();
         for (String modelId : modelIds) {
-            if (modelConfigExists(statement, modelId)) {
+            if (modelConfigExists(connection, modelId)) {
                 continue;
             }
-            insertDefaultModelConfig(statement, modelId, settings, now);
+            insertDefaultModelConfig(connection, modelId, settings, now);
         }
     }
 
@@ -241,19 +243,20 @@ public final class SchemaMigrator {
         }
     }
 
-    private static boolean modelConfigExists(Statement statement, String modelId)
+    private static boolean modelConfigExists(Connection connection, String modelId)
             throws SQLException {
-        try (ResultSet rs =
-                statement.executeQuery(
-                        "SELECT 1 FROM model_configs WHERE model_id = '"
-                                + modelId.replace("'", "''")
-                                + "'")) {
-            return rs.next();
+        try (PreparedStatement ps =
+                connection.prepareStatement("SELECT 1 FROM model_configs WHERE model_id = ?")) {
+            ps.setString(1, modelId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
         }
     }
 
     private static void insertDefaultModelConfig(
-            Statement statement, String modelId, JsonNode settings, long now) throws SQLException {
+            Connection connection, String modelId, JsonNode settings, long now)
+            throws SQLException {
         // 只迁移旧版确实存在的公共字段，其余新增参数使用与新导入模型一致的模板值。
         int contextSize = intOr(settings, "contextSize", 4096);
         int threads = intOr(settings, "threads", 4);
@@ -261,31 +264,26 @@ public final class SchemaMigrator {
         double temperature = doubleOr(settings, "temperature", 0.7);
         double topP = doubleOr(settings, "topP", 0.9);
         int maxTokens = intOr(settings, "maxTokens", 1024);
-        String escapedId = modelId.replace("'", "''");
-        statement.execute(
-                "INSERT INTO model_configs("
-                        + "model_id, context_size, threads, gpu_layers, batch_size, ubatch_size,"
-                        + " flash_attention, memory_map, memory_lock, temperature, top_p, top_k, min_p,"
-                        + " max_tokens, repeat_penalty, repeat_last_n, seed, frequency_penalty,"
-                        + " presence_penalty, stop_json, compression_enabled, compression_trigger_ratio,"
-                        + " keep_recent_messages, summary_max_tokens, advanced_inference_params, updated_at)"
-                        + " VALUES('"
-                        + escapedId
-                        + "', "
-                        + contextSize
-                        + ", "
-                        + threads
-                        + ", "
-                        + gpuLayers
-                        + ", 512, 512, 0, 1, 0, "
-                        + temperature
-                        + ", "
-                        + topP
-                        + ", 40, 0.05, "
-                        + maxTokens
-                        + ", 1.1, 64, NULL, 0, 0, '[]', 1, 0.75, 8, 256, '{}', "
-                        + now
-                        + ")");
+        try (PreparedStatement ps =
+                connection.prepareStatement(
+                        "INSERT INTO model_configs("
+                                + "model_id, context_size, threads, gpu_layers, batch_size, ubatch_size,"
+                                + " flash_attention, memory_map, memory_lock, temperature, top_p, top_k, min_p,"
+                                + " max_tokens, repeat_penalty, repeat_last_n, seed, frequency_penalty,"
+                                + " presence_penalty, stop_json, compression_enabled, compression_trigger_ratio,"
+                                + " keep_recent_messages, summary_max_tokens, advanced_inference_params, updated_at)"
+                                + " VALUES(?, ?, ?, ?, 512, 512, 0, 1, 0, ?, ?, 40, 0.05, ?,"
+                                + " 1.1, 64, NULL, 0, 0, '[]', 1, 0.75, 8, 256, '{}', ?)")) {
+            ps.setString(1, modelId);
+            ps.setInt(2, contextSize);
+            ps.setInt(3, threads);
+            ps.setInt(4, gpuLayers);
+            ps.setDouble(5, temperature);
+            ps.setDouble(6, topP);
+            ps.setInt(7, maxTokens);
+            ps.setLong(8, now);
+            ps.executeUpdate();
+        }
     }
 
     private static int intOr(JsonNode node, String field, int fallback) {

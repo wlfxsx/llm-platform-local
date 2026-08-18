@@ -15,11 +15,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import org.springframework.stereotype.Component;
 
@@ -181,9 +177,7 @@ public class LlamafileChatClient implements ChatModelClient {
         if (advanced == null || !advanced.isObject()) {
             return;
         }
-        Iterator<Map.Entry<String, JsonNode>> fields = advanced.fields();
-        while (fields.hasNext()) {
-            Map.Entry<String, JsonNode> field = fields.next();
+        for (Map.Entry<String, JsonNode> field : advanced.properties()) {
             String name = field.getKey();
             // 服务层已拒绝保留键，这里再次防御，避免绕过服务层的内部调用破坏请求结构。
             if ("model".equals(name) || "messages".equals(name) || "stream".equals(name)) {

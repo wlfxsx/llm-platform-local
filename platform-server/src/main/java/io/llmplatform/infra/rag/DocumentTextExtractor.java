@@ -30,69 +30,6 @@ public class DocumentTextExtractor {
 
     private final Tika tika = new Tika();
 
-    public ExtractedDocument extract(Path source) {
-        if (source == null || !Files.isRegularFile(source)) {
-            throw new PlatformException("INVALID_REQUEST", "error.invalidRequest");
-        }
-        String fileName = source.getFileName().toString();
-        String ext = extension(fileName);
-        DocumentKind kind = kindOf(ext);
-        String text;
-        try {
-            if (HTML.contains(ext)) {
-                text = stripHtml(readText(source));
-            } else if (TIKA.contains(ext) || looksBinary(source, ext)) {
-                text = parseWithTika(source);
-            } else {
-                text = readText(source);
-            }
-        } catch (PlatformException ex) {
-            throw ex;
-        } catch (IOException ex) {
-            throw new PlatformException("FILE_COPY_FAILED", "error.fileCopyFailed");
-        }
-        text = normalize(text);
-        if (text.isBlank()) {
-            throw new PlatformException("RAG_EMPTY_TEXT", "error.ragNoExtractableText");
-        }
-        if (text.length() > MAX_CHARS) {
-            text = text.substring(0, MAX_CHARS);
-        }
-        return new ExtractedDocument(text, kind, fileName);
-    }
-
-    private String parseWithTika(Path source) throws IOException {
-        try (InputStream input = Files.newInputStream(source)) {
-            String parsed = tika.parseToString(input);
-            return parsed == null ? "" : parsed;
-        } catch (Exception ex) {
-            if (ex instanceof IOException io) {
-                throw io;
-            }
-            throw new PlatformException("RAG_EMPTY_TEXT", "error.ragNoExtractableText");
-        }
-    }
-
-    private String readText(Path source) throws IOException {
-        byte[] bytes = Files.readAllBytes(source);
-        try {
-            return new String(bytes, StandardCharsets.UTF_8);
-        } catch (Exception ex) {
-            return new String(bytes, Charset.defaultCharset());
-        }
-    }
-
-    private boolean looksBinary(Path source, String ext) throws IOException {
-        if (!TEXT.contains(ext)
-                && !MARKDOWN.contains(ext)
-                && !CODE.contains(ext)
-                && !HTML.contains(ext)) {
-            byte[] probe = readProbe(source);
-            return probe.length > 0 && !isMostlyText(probe);
-        }
-        return false;
-    }
-
     private static byte[] readProbe(Path source) throws IOException {
         try (InputStream input = Files.newInputStream(source)) {
             return input.readNBytes(2048);
@@ -149,5 +86,66 @@ public class DocumentTextExtractor {
             return "";
         }
         return fileName.substring(dot + 1).toLowerCase(Locale.ROOT);
+    }
+
+    public ExtractedDocument extract(Path source) {
+        if (source == null || !Files.isRegularFile(source)) {
+            throw new PlatformException("INVALID_REQUEST", "error.invalidRequest");
+        }
+        String fileName = source.getFileName().toString();
+        String ext = extension(fileName);
+        DocumentKind kind = kindOf(ext);
+        String text;
+        try {
+            if (HTML.contains(ext)) {
+                text = stripHtml(readText(source));
+            } else if (TIKA.contains(ext) || looksBinary(source, ext)) {
+                text = parseWithTika(source);
+            } else {
+                text = readText(source);
+            }
+        } catch (IOException ex) {
+            throw new PlatformException("FILE_COPY_FAILED", "error.fileCopyFailed");
+        }
+        text = normalize(text);
+        if (text.isBlank()) {
+            throw new PlatformException("RAG_EMPTY_TEXT", "error.ragNoExtractableText");
+        }
+        if (text.length() > MAX_CHARS) {
+            text = text.substring(0, MAX_CHARS);
+        }
+        return new ExtractedDocument(text, kind, fileName);
+    }
+
+    private String parseWithTika(Path source) throws IOException {
+        try (InputStream input = Files.newInputStream(source)) {
+            String parsed = tika.parseToString(input);
+            return parsed == null ? "" : parsed;
+        } catch (Exception ex) {
+            if (ex instanceof IOException io) {
+                throw io;
+            }
+            throw new PlatformException("RAG_EMPTY_TEXT", "error.ragNoExtractableText");
+        }
+    }
+
+    private String readText(Path source) throws IOException {
+        byte[] bytes = Files.readAllBytes(source);
+        try {
+            return new String(bytes, StandardCharsets.UTF_8);
+        } catch (Exception ex) {
+            return new String(bytes, Charset.defaultCharset());
+        }
+    }
+
+    private boolean looksBinary(Path source, String ext) throws IOException {
+        if (!TEXT.contains(ext)
+                && !MARKDOWN.contains(ext)
+                && !CODE.contains(ext)
+                && !HTML.contains(ext)) {
+            byte[] probe = readProbe(source);
+            return probe.length > 0 && !isMostlyText(probe);
+        }
+        return false;
     }
 }

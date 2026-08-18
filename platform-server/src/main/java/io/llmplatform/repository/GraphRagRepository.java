@@ -1,8 +1,12 @@
 package io.llmplatform.repository;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,9 +15,27 @@ import org.springframework.transaction.annotation.Transactional;
 public class GraphRagRepository {
 
     private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate namedJdbc;
 
     public GraphRagRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
+        this.namedJdbc = new NamedParameterJdbcTemplate(jdbcTemplate);
+    }
+
+    private static boolean containsIgnoreCase(String haystack, String needle) {
+        if (haystack == null || needle == null || needle.isBlank()) {
+            return false;
+        }
+        return haystack.toLowerCase().contains(needle.toLowerCase());
+    }
+
+    private static EntityRow mapEntity(ResultSet rs) throws SQLException {
+        return new EntityRow(
+                rs.getString("id"),
+                rs.getString("name"),
+                rs.getString("normalized_name"),
+                rs.getString("type"),
+                rs.getString("document_id"));
     }
 
     @Transactional
@@ -83,46 +105,22 @@ public class GraphRagRepository {
         if (names.isEmpty()) {
             return List.of();
         }
-        String placeholders = String.join(",", names.stream().map(item -> "?").toList());
-        List<EntityRow> rows = new ArrayList<>();
-        jdbcTemplate.query(
-                "SELECT id, name, normalized_name, type, document_id FROM rag_entities WHERE normalized_name IN ("
-                        + placeholders
-                        + ")",
-                rs -> {
-                    rows.add(
-                            new EntityRow(
-                                    rs.getString("id"),
-                                    rs.getString("name"),
-                                    rs.getString("normalized_name"),
-                                    rs.getString("type"),
-                                    rs.getString("document_id")));
-                },
-                names.toArray());
-        return rows;
+        return namedJdbc.query(
+                "SELECT id, name, normalized_name, type, document_id FROM rag_entities"
+                        + " WHERE normalized_name IN (:names)",
+                new MapSqlParameterSource("names", names),
+                (rs, rowNum) -> mapEntity(rs));
     }
 
     public List<EntityRow> findEntitiesByIds(List<String> ids) {
         if (ids.isEmpty()) {
             return List.of();
         }
-        String placeholders = String.join(",", ids.stream().map(item -> "?").toList());
-        List<EntityRow> rows = new ArrayList<>();
-        jdbcTemplate.query(
-                "SELECT id, name, normalized_name, type, document_id FROM rag_entities WHERE id IN ("
-                        + placeholders
-                        + ")",
-                rs -> {
-                    rows.add(
-                            new EntityRow(
-                                    rs.getString("id"),
-                                    rs.getString("name"),
-                                    rs.getString("normalized_name"),
-                                    rs.getString("type"),
-                                    rs.getString("document_id")));
-                },
-                ids.toArray());
-        return rows;
+        return namedJdbc.query(
+                "SELECT id, name, normalized_name, type, document_id FROM rag_entities"
+                        + " WHERE id IN (:ids)",
+                new MapSqlParameterSource("ids", ids),
+                (rs, rowNum) -> mapEntity(rs));
     }
 
     public List<EntityRow> findEntitiesMentioned(String query) {
@@ -133,13 +131,7 @@ public class GraphRagRepository {
                     String name = rs.getString("name");
                     String normalized = rs.getString("normalized_name");
                     if (containsIgnoreCase(query, name) || containsIgnoreCase(query, normalized)) {
-                        rows.add(
-                                new EntityRow(
-                                        rs.getString("id"),
-                                        name,
-                                        normalized,
-                                        rs.getString("type"),
-                                        rs.getString("document_id")));
+                        rows.add(mapEntity(rs));
                     }
                 });
         return rows;
@@ -149,30 +141,18 @@ public class GraphRagRepository {
         if (entityIds.isEmpty()) {
             return List.of();
         }
-        String placeholders = String.join(",", entityIds.stream().map(item -> "?").toList());
-        List<Object> args = new ArrayList<>();
-        args.addAll(entityIds);
-        args.addAll(entityIds);
-        List<EdgeRow> rows = new ArrayList<>();
-        jdbcTemplate.query(
+        return namedJdbc.query(
                 "SELECT id, from_id, to_id, predicate, evidence_chunk_id, document_id FROM rag_edges"
-                        + " WHERE from_id IN ("
-                        + placeholders
-                        + ") OR to_id IN ("
-                        + placeholders
-                        + ")",
-                rs -> {
-                    rows.add(
-                            new EdgeRow(
-                                    rs.getString("id"),
-                                    rs.getString("from_id"),
-                                    rs.getString("to_id"),
-                                    rs.getString("predicate"),
-                                    rs.getString("evidence_chunk_id"),
-                                    rs.getString("document_id")));
-                },
-                args.toArray());
-        return rows;
+                        + " WHERE from_id IN (:ids) OR to_id IN (:ids)",
+                new MapSqlParameterSource("ids", entityIds),
+                (rs, rowNum) ->
+                        new EdgeRow(
+                                rs.getString("id"),
+                                rs.getString("from_id"),
+                                rs.getString("to_id"),
+                                rs.getString("predicate"),
+                                rs.getString("evidence_chunk_id"),
+                                rs.getString("document_id")));
     }
 
     public record EntityRow(
@@ -185,11 +165,4 @@ public class GraphRagRepository {
             String predicate,
             String evidenceChunkId,
             String documentId) {}
-
-    private static boolean containsIgnoreCase(String haystack, String needle) {
-        if (haystack == null || needle == null || needle.isBlank()) {
-            return false;
-        }
-        return haystack.toLowerCase().contains(needle.toLowerCase());
-    }
 }

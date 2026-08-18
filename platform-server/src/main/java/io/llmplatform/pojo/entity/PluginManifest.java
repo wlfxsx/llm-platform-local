@@ -15,16 +15,13 @@ public record PluginManifest(
     public static PluginManifest fromJson(JsonNode node) {
         Map<String, PluginCapabilityDecl> capabilities = new LinkedHashMap<>();
         JsonNode caps = node.path("capabilities");
-        caps.fields()
-                .forEachRemaining(
-                        entry ->
-                                capabilities.put(
-                                        entry.getKey(),
-                                        new PluginCapabilityDecl(
-                                                entry.getValue().path("required").asBoolean(false),
-                                                entry.getValue()
-                                                        .path("enabledByDefault")
-                                                        .asBoolean(false))));
+        for (Map.Entry<String, JsonNode> entry : caps.properties()) {
+            capabilities.put(
+                    entry.getKey(),
+                    new PluginCapabilityDecl(
+                            entry.getValue().path("required").asBoolean(false),
+                            entry.getValue().path("enabledByDefault").asBoolean(false)));
+        }
         return new PluginManifest(
                 node.path("id").asText(),
                 node.path("name").asText(node.path("id").asText()),

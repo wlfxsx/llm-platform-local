@@ -58,7 +58,7 @@ public class LlamafileTokenCounter implements TokenCounter {
                 return conservative.count(text);
             }
             JsonNode tokens = objectMapper.readTree(response.body()).path("tokens");
-            if (tokens.isArray() && tokens.size() > 0) {
+            if (tokens.isArray() && !tokens.isEmpty()) {
                 return tokens.size();
             }
             return conservative.count(text);

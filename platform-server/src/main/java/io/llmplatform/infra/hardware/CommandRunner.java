@@ -31,6 +31,7 @@ final class CommandRunner {
                 }
             }
             if (!process.waitFor(TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+                process.destroyForcibly();
                 return List.of();
             }
             return lines;

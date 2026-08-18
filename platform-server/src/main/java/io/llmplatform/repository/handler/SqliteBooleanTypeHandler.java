@@ -12,6 +12,15 @@ import org.apache.ibatis.type.MappedTypes;
 @MappedTypes(Boolean.class)
 public class SqliteBooleanTypeHandler extends BaseTypeHandler<Boolean> {
 
+    private static Boolean toBoolean(Object value) {
+        return switch (value) {
+            case null -> null;
+            case Boolean bool -> bool;
+            case Number number -> number.intValue() != 0;
+            default -> "1".equals(value.toString()) || Boolean.parseBoolean(value.toString());
+        };
+    }
+
     @Override
     public void setNonNullParameter(
             PreparedStatement ps, int i, Boolean parameter, JdbcType jdbcType) throws SQLException {
@@ -31,18 +40,5 @@ public class SqliteBooleanTypeHandler extends BaseTypeHandler<Boolean> {
     @Override
     public Boolean getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
         return toBoolean(cs.getObject(columnIndex));
-    }
-
-    private static Boolean toBoolean(Object value) {
-        if (value == null) {
-            return null;
-        }
-        if (value instanceof Boolean bool) {
-            return bool;
-        }
-        if (value instanceof Number number) {
-            return number.intValue() != 0;
-        }
-        return "1".equals(value.toString()) || Boolean.parseBoolean(value.toString());
     }
 }

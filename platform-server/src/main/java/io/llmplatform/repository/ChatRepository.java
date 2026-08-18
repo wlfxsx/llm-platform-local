@@ -35,6 +35,8 @@ public class ChatRepository {
         sessionMapper.insert(session);
     }
 
+    /** 三参入口也必须走代理事务：本类自调用四参方法时 {@code @Transactional} 不会生效。 */
+    @Transactional
     public void insertMessage(String sessionId, ChatMessage message, long createdAt) {
         insertMessage(sessionId, message, createdAt, 0);
     }

@@ -58,7 +58,7 @@ public class ContextCompressionService {
         if (systemPrompt != null && !systemPrompt.isBlank()) {
             history.add(new ChatMessage("system", systemPrompt));
         }
-        if (summary != null && !summary.isBlank()) {
+        if (!summary.isBlank()) {
             history.add(new ChatMessage("system", "Session summary:\n" + summary));
         }
         for (MessageEntity message : pending) {
@@ -124,7 +124,7 @@ public class ContextCompressionService {
                     events,
                     requestId,
                     ChatEventTypes.COMPRESS_STARTED,
-                    Map.of("sessionId", sessionId));
+                    Map.of("sessionId", sessionId, "messageKey", "status.compressing"));
             try {
                 String next = summarizer.summarize(summary, toSummarize, config);
                 int summaryTokens = tokenCounter.count(next);
@@ -174,7 +174,7 @@ public class ContextCompressionService {
         return chatRepository
                 .findContext(sessionId)
                 .map(SessionContextEntity::getSummary)
-                .filter(text -> text != null && !text.isBlank())
+                .filter(text -> !text.isBlank())
                 .orElse("");
     }
 

@@ -4,9 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -19,6 +21,7 @@ public class PlatformWebSocketHandler extends TextWebSocketHandler {
 
     private static final Logger log = LoggerFactory.getLogger(PlatformWebSocketHandler.class);
     private final Set<WebSocketSession> sessions = new CopyOnWriteArraySet<>();
+    private final ConcurrentHashMap<String, Object> sendLocks = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper;
 
     public PlatformWebSocketHandler(ObjectMapper objectMapper) {
@@ -26,14 +29,16 @@ public class PlatformWebSocketHandler extends TextWebSocketHandler {
     }
 
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) {
+    public void afterConnectionEstablished(@NonNull WebSocketSession session) {
         sessions.add(session);
         publish("status", "connected", Map.of());
     }
 
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+    public void afterConnectionClosed(
+            @NonNull WebSocketSession session, @NonNull CloseStatus status) {
         sessions.remove(session);
+        sendLocks.remove(session.getId());
     }
 
     public void publish(String type, String requestId, Map<String, Object> payload) {
@@ -51,7 +56,8 @@ public class PlatformWebSocketHandler extends TextWebSocketHandler {
             if (!session.isOpen()) {
                 continue;
             }
-            synchronized (session) {
+            Object lock = sendLocks.computeIfAbsent(session.getId(), id -> new Object());
+            synchronized (lock) {
                 try {
                     session.sendMessage(message);
                 } catch (IOException ex) {

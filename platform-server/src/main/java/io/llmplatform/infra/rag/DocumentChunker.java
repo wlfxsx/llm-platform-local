@@ -103,19 +103,6 @@ public final class DocumentChunker {
         return groups;
     }
 
-    public record ParentGroup(String headingPath, List<ChunkDraft> children) {
-        public String combinedBody() {
-            StringBuilder builder = new StringBuilder();
-            for (ChunkDraft child : children) {
-                if (!builder.isEmpty()) {
-                    builder.append("\n\n");
-                }
-                builder.append(child.body());
-            }
-            return builder.toString();
-        }
-    }
-
     private static List<Section> splitMarkdown(String text, String title) {
         List<Section> sections = new ArrayList<>();
         Matcher fences = FENCE.matcher(text);
@@ -225,7 +212,7 @@ public final class DocumentChunker {
         List<String> merged = new ArrayList<>();
         StringBuilder current = new StringBuilder();
         for (String part : parts) {
-            if (current.length() == 0) {
+            if (current.isEmpty()) {
                 current.append(part);
                 continue;
             }
@@ -237,7 +224,7 @@ public final class DocumentChunker {
                 current.append(part);
             }
         }
-        if (current.length() > 0) {
+        if (!current.isEmpty()) {
             merged.add(current.toString().trim());
         }
         return merged;
@@ -341,6 +328,19 @@ public final class DocumentChunker {
         int max = Math.min(body.length(), 80);
         String needle = body.substring(0, max);
         return source.indexOf(needle, from);
+    }
+
+    public record ParentGroup(String headingPath, List<ChunkDraft> children) {
+        public String combinedBody() {
+            StringBuilder builder = new StringBuilder();
+            for (ChunkDraft child : children) {
+                if (!builder.isEmpty()) {
+                    builder.append("\n\n");
+                }
+                builder.append(child.body());
+            }
+            return builder.toString();
+        }
     }
 
     private record Section(String headingPath, String body, int start) {}

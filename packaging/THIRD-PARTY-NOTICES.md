@@ -1,8 +1,7 @@
 # Third-Party Notices
 
 This project is licensed under the Apache License 2.0. See the repository root
-`LICENSE` and `NOTICE` files. A packaged distribution may also include the
-following third-party software.
+`LICENSE` and `NOTICE` files. A packaged distribution may also include the following third-party software.
 
 ## AgentScope Java 2.0.1
 
@@ -78,8 +77,7 @@ following third-party software.
 - They are pre-v1; the application falls back to brute-force search if loading fails.
 - Follow the upstream license of the chosen extension when copying binaries into `native/`.
 
-License texts and notices distributed by transitive dependencies remain subject
-to their respective upstream terms.
+License texts and notices distributed by transitive dependencies remain subject to their respective upstream terms.
 
 Apache License 2.0:
 

@@ -8,6 +8,7 @@ import io.llmplatform.repository.SkillRepository;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -72,7 +73,7 @@ public class SkillService {
             Path dir = Path.of(skill.directory());
             if (Files.exists(dir)) {
                 try (Stream<Path> walk = Files.walk(dir)) {
-                    walk.sorted((a, b) -> b.compareTo(a))
+                    walk.sorted(Comparator.reverseOrder())
                             .forEach(
                                     path -> {
                                         try {

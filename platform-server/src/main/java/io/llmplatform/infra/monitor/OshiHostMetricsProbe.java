@@ -25,8 +25,28 @@ public class OshiHostMetricsProbe implements HostMetricsProbe {
     private static final Logger log = LoggerFactory.getLogger(OshiHostMetricsProbe.class);
     private final SystemInfo systemInfo = new SystemInfo();
     private final Object cpuLock = new Object();
-    private long[] previousCpuTicks;
     private final Map<Integer, OSProcess> previousProcesses = new ConcurrentHashMap<>();
+    private long[] previousCpuTicks;
+
+    private static double clampPercent(double value) {
+        if (Double.isNaN(value) || Double.isInfinite(value)) {
+            return 0;
+        }
+        return Math.clamp(value, 0.0, 100.0);
+    }
+
+    private static Double parseDouble(String raw) {
+        try {
+            return Double.parseDouble(raw.trim());
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    private static Long parseMibToBytes(String raw) {
+        Double mib = parseDouble(raw);
+        return mib == null ? null : Math.round(mib * 1024d * 1024d);
+    }
 
     @Override
     public SystemResourceMetrics system() {
@@ -94,56 +114,42 @@ public class OshiHostMetricsProbe implements HostMetricsProbe {
                             "--format=csv,noheader,nounits");
             builder.redirectErrorStream(true);
             Process process = builder.start();
-            boolean finished = process.waitFor(2, TimeUnit.SECONDS);
-            if (!finished) {
-                process.destroyForcibly();
-                return GpuResourceMetrics.unavailable();
-            }
-            if (process.exitValue() != 0) {
-                return GpuResourceMetrics.unavailable();
-            }
-            try (BufferedReader reader =
-                    new BufferedReader(
-                            new InputStreamReader(
-                                    process.getInputStream(), StandardCharsets.UTF_8))) {
-                String line = reader.readLine();
-                if (line == null || line.isBlank()) {
+            try {
+                boolean finished = process.waitFor(2, TimeUnit.SECONDS);
+                if (!finished) {
+                    process.destroyForcibly();
                     return GpuResourceMetrics.unavailable();
                 }
-                String[] parts = line.split(",");
-                if (parts.length < 5) {
+                if (process.exitValue() != 0) {
                     return GpuResourceMetrics.unavailable();
                 }
-                return new GpuResourceMetrics(
-                        true,
-                        parts[0].trim(),
-                        parseDouble(parts[1]),
-                        parseMibToBytes(parts[2]),
-                        parseMibToBytes(parts[3]),
-                        parseDouble(parts[4]));
+                try (BufferedReader reader =
+                        new BufferedReader(
+                                new InputStreamReader(
+                                        process.getInputStream(), StandardCharsets.UTF_8))) {
+                    String line = reader.readLine();
+                    if (line == null || line.isBlank()) {
+                        return GpuResourceMetrics.unavailable();
+                    }
+                    String[] parts = line.split(",");
+                    if (parts.length < 5) {
+                        return GpuResourceMetrics.unavailable();
+                    }
+                    return new GpuResourceMetrics(
+                            true,
+                            parts[0].trim(),
+                            parseDouble(parts[1]),
+                            parseMibToBytes(parts[2]),
+                            parseMibToBytes(parts[3]),
+                            parseDouble(parts[4]));
+                }
+            } finally {
+                if (process.isAlive()) {
+                    process.destroyForcibly();
+                }
             }
         } catch (Exception ex) {
             return GpuResourceMetrics.unavailable();
         }
-    }
-
-    private static double clampPercent(double value) {
-        if (Double.isNaN(value) || Double.isInfinite(value)) {
-            return 0;
-        }
-        return Math.max(0, Math.min(100, value));
-    }
-
-    private static Double parseDouble(String raw) {
-        try {
-            return Double.parseDouble(raw.trim());
-        } catch (Exception ex) {
-            return null;
-        }
-    }
-
-    private static Long parseMibToBytes(String raw) {
-        Double mib = parseDouble(raw);
-        return mib == null ? null : Math.round(mib * 1024d * 1024d);
     }
 }

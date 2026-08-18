@@ -1,6 +1,7 @@
 # 本地 AI 平台
 
-一个面向 Windows、macOS 和 Linux 的本地优先大模型桌面平台。项目使用 Java 21、Spring Boot、Avalonia、llamafile 和 AgentScope Java 构建。
+一个面向 Windows、macOS 和 Linux 的本地优先大模型桌面平台。项目使用 Java 21、Spring Boot、Avalonia、llamafile 和 AgentScope
+Java 构建。
 
 英文文档：[readme/README-EN.md](readme/README-EN.md)
 
@@ -54,7 +55,8 @@ Avalonia 桌面应用
 
 ### llamafile 放置位置
 
-仓库不包含 llamafile 二进制。请从 [Mozilla llamafile Releases](https://github.com/Mozilla-Ocho/llamafile/releases) 下载后，按下列之一放置（Windows 使用 `llamafile.exe`，其它系统使用 `llamafile`）：
+仓库不包含 llamafile 二进制。请从 [Mozilla llamafile Releases](https://github.com/Mozilla-Ocho/llamafile/releases)
+下载后，按下列之一放置（Windows 使用 `llamafile.exe`，其它系统使用 `llamafile`）：
 
 1. **开发机推荐（不入库）**：放到仓库根目录 `.me/files/llamafile.exe` 或 `.me/files/llamafile`
 2. **组装/安装目录**：放到 `runtime/llamafile.exe` 或 `runtime/llamafile`（与 `platform-server.jar` 同级）
@@ -66,12 +68,13 @@ Avalonia 桌面应用
 
 本地知识库默认使用 BGE-M3 向量模型和 bge-reranker-v2-m3 重排模型（均为 Q4_K_M GGUF，约各 438MB）。权重不入库，首次可用时会复制到用户数据目录：
 
-| 用途 | 文件名 | 用户数据目录 | 组装目录 | 开发机备选（不入库） |
-|------|--------|--------------|----------|----------------------|
-| 向量化 | `bge-m3-q4_k_m.gguf` | `~/.llm-platform/models/embedding/` | `runtime/models/embedding/` | `.me/model/` |
-| 重排 | `bge-reranker-v2-m3-q4_k_m.gguf` | `~/.llm-platform/models/rerank/` | `runtime/models/rerank/` | `.me/model/` |
+| 用途   | 文件名                           | 用户数据目录                        | 组装目录                    | 开发机备选（不入库） |
+|--------|----------------------------------|-------------------------------------|-----------------------------|----------------------|
+| 向量化 | `bge-m3-q4_k_m.gguf`             | `~/.llm-platform/models/embedding/` | `runtime/models/embedding/` | `.me/model/`         |
+| 重排   | `bge-reranker-v2-m3-q4_k_m.gguf` | `~/.llm-platform/models/rerank/`    | `runtime/models/rerank/`    | `.me/model/`         |
 
-缺少向量模型时无法导入知识库文档；缺少重排模型时仍可使用向量 + FTS 混合召回。当前支持抽取有文字层的文本、Markdown、HTML、PDF、Office 等格式，不支持扫描件 OCR。
+缺少向量模型时无法导入知识库文档；缺少重排模型时仍可使用向量 + FTS 混合召回。当前支持抽取有文字层的文本、Markdown、HTML、PDF、Office
+等格式，不支持扫描件 OCR。
 
 先构建 Java 控制面：
 

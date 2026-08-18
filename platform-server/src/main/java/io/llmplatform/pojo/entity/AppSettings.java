@@ -5,7 +5,11 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 
-/** 应用级设置；模型运行参数已迁到每模型独立配置。 */
+/**
+ * 应用级设置；模型运行参数已迁到每模型独立配置。
+ *
+ * <p>{@code chatProvider} 为 local 或 remote，决定对话走 llamafile 还是远程 OpenAI 兼容接口。
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record AppSettings(
         @NotBlank String language,
@@ -23,7 +27,6 @@ public record AppSettings(
         @Min(0) @Max(65535) int embeddingLlamafilePort,
         @Min(0) @Max(65535) int rerankLlamafilePort,
         boolean networkEnabled,
-        /** local | remote；决定对话走 llamafile 还是远程 OpenAI 兼容接口。 */
         String chatProvider,
         String currentRemoteModelId) {
 

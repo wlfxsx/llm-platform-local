@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -124,7 +125,7 @@ public class PluginService {
             Path dir = Path.of(plugin.directory());
             if (Files.exists(dir)) {
                 try (var walk = Files.walk(dir)) {
-                    walk.sorted((a, b) -> b.compareTo(a))
+                    walk.sorted(Comparator.reverseOrder())
                             .forEach(
                                     path -> {
                                         try {
